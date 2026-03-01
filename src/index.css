@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --color-mistral-bg: #111827;
-  --color-mistral-panel: #1F2937;
-  --color-mistral-yellow: #FCD34D;
-  --color-mistral-hover: #FBBF24;
+  --color-mistral-bg: #0A0A0A;
+  --color-mistral-panel: #171717;
+  --color-mistral-orange: #f97316;
+  --color-mistral-hover: #ea580c;
   --color-mistral-border: #4B5563;
   --color-mistral-text: #FFFFFF;
   --color-mistral-muted: #D1D5DB;
@@ -30,12 +30,12 @@
 .react-flow__handle {
   width: 10px;
   height: 10px;
-  background-color: #FCD34D;
-  border: 2px solid #111827;
+  background-color: var(--color-mistral-orange);
+  border: 2px solid var(--color-mistral-bg);
 }
 
 .react-flow__edge-path {
-  stroke: #FCD34D;
+  stroke: var(--color-mistral-orange);
   stroke-width: 3;
 }
 
@@ -48,4 +48,32 @@
   from {
     stroke-dashoffset: 10;
   }
+}
+
+/* 8-bit Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-mistral-bg);
+  border-left: 2px solid var(--color-mistral-border);
+  border-top: 2px solid var(--color-mistral-border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-mistral-orange);
+  border: 3px solid var(--color-mistral-bg);
+  border-radius: 0px;
+  /* Sharp 8-bit edges */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+  /* mistral-hover equivalent */
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-mistral-bg);
 }

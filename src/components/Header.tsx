@@ -1,4 +1,5 @@
 import { Play, Square, Link as LinkIcon, Menu, Save, Plus, ChevronDown } from 'lucide-react';
+import { PixelMistralLogo } from './icons/PixelIcons';
 
 interface HeaderProps {
     flows: { id: string, name: string }[];
@@ -18,15 +19,15 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
         <header className="h-16 bg-mistral-bg border-b border-mistral-border flex items-center justify-between px-6 shrink-0 z-50">
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
-                    {/* Abstract Flow Icon */}
-                    <div className="w-8 h-8 rounded-full border-2 border-mistral-yellow flex items-center justify-center">
-                        <div className="w-4 h-4 bg-mistral-yellow rounded-full" />
+                    {/* Official Mistral Logo */}
+                    <div className="flex items-center justify-center text-mistral-orange drop-shadow-md">
+                        <PixelMistralLogo size={32} />
                     </div>
-                    <span className="text-mistral-yellow font-bold text-xl tracking-wide">Le Flux</span>
+                    <span className="text-mistral-orange font-bold text-xl tracking-wide shrink-0">Mistral AI Studio</span>
                 </div>
 
                 <div className="hidden md:flex items-center gap-4 ml-8 relative group">
-                    <button className="flex items-center gap-2 bg-[#1a2234] border border-mistral-border px-3 py-1.5 rounded text-sm text-white hover:border-mistral-yellow transition-colors">
+                    <button className="flex items-center gap-2 bg-[#1a2234] border border-mistral-border px-3 py-1.5 rounded text-sm text-white hover:border-mistral-orange transition-colors">
                         <span className="truncate max-w-[150px]">
                             {flows.find(f => f.id === currentFlowId)?.name || 'Untitled Flow'}
                         </span>
@@ -39,7 +40,7 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
                                 <button
                                     key={f.id}
                                     onClick={() => onSelectFlow(f.id)}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#2d3748] ${f.id === currentFlowId ? 'text-mistral-yellow font-bold' : 'text-mistral-muted hover:text-white'}`}
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-[#2d3748] ${f.id === currentFlowId ? 'text-mistral-orange font-bold' : 'text-mistral-muted hover:text-white'}`}
                                 >
                                     {f.name}
                                 </button>
@@ -61,7 +62,7 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
                         placeholder="Mistral API Key..."
                         value={apiKey}
                         onChange={(e) => onApiKeyChange(e.target.value)}
-                        className="bg-mistral-panel border border-mistral-border rounded-md px-3 py-1.5 text-sm text-white focus:outline-none focus:border-mistral-yellow w-48 transition-colors"
+                        className="bg-mistral-panel border border-mistral-border rounded-md px-3 py-1.5 text-sm text-white focus:outline-none focus:border-mistral-orange w-48 transition-colors"
                     />
                     {!apiKey && <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-red-500 animate-pulse" title="API Key Required" />}
                     {apiKey && <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-green-500" title="API Key Set" />}
@@ -87,7 +88,7 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
                 ) : (
                     <button
                         onClick={onPlay}
-                        className="font-semibold px-6 py-2 rounded-md flex items-center gap-2 transition-transform shadow-[0_0_15px_rgba(252,211,77,0.3)] bg-mistral-yellow hover:bg-mistral-hover text-black active:scale-95"
+                        className="font-semibold px-6 py-2 rounded-md flex items-center gap-2 transition-transform shadow-[0_0_15px_rgba(252,211,77,0.3)] bg-mistral-orange hover:bg-mistral-hover text-black active:scale-95"
                     >
                         <Play className="w-4 h-4 fill-current" />
                         Play

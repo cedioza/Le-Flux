@@ -1,5 +1,56 @@
 import { X, Settings, Terminal, FileText, CheckCircle2, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+
+const DraggablePanel = ({ title, icon: Icon, children, defaultPosition, colorClass = "text-mistral-orange" }: any) => {
+    const [position, setPosition] = useState(defaultPosition);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragRef = useRef<{ x: number, y: number } | null>(null);
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (isDragging && dragRef.current) {
+                setPosition({
+                    x: Math.max(0, e.clientX - dragRef.current.x),
+                    y: Math.max(0, e.clientY - dragRef.current.y)
+                });
+            }
+        };
+        const handleMouseUp = () => setIsDragging(false);
+
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging]);
+
+    return (
+        <div
+            style={{ left: position.x, top: position.y }}
+            className={`fixed z-50 w-[300px] bg-[#0A0A0A] border-4 border-mistral-border flex flex-col max-h-[400px] transition-opacity ${isDragging ? 'opacity-80' : 'opacity-100 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]'}`}
+        >
+            <div
+                className="p-2 border-b-4 border-mistral-border bg-[#171717] flex items-center justify-between cursor-move select-none active:cursor-grabbing"
+                onMouseDown={(e) => { setIsDragging(true); dragRef.current = { x: e.clientX - position.x, y: e.clientY - position.y }; }}
+            >
+                <div className={`flex items-center gap-2 ${colorClass} text-[10px] font-bold uppercase tracking-widest`}>
+                    {Icon && <Icon className="w-4 h-4" />} {title}
+                </div>
+                <div className="flex gap-1 opacity-50">
+                    <div className="w-2 h-2 rounded-full bg-mistral-border"></div>
+                    <div className="w-2 h-2 rounded-full bg-mistral-border"></div>
+                    <div className="w-2 h-2 rounded-full bg-mistral-border"></div>
+                </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 bg-[#0A0A0A]">
+                {children}
+            </div>
+        </div>
+    );
+};
 
 export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, onTestNode, upstreamNodes = [] }: { selectedNode: any, onClose: () => void, onDelete: (id: string) => void, onUpdateData: (newData: any) => void, onTestNode: () => void, upstreamNodes?: any[] }) => {
     if (!selectedNode) return null;
@@ -65,7 +116,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     onClick={() => setIsOpen(!isOpen)}
                 >
                     <div className={`w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[6px] border-l-gray-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
-                    <div className="w-2 h-2 rounded-full bg-mistral-yellow" />
+                    <div className="w-2 h-2 rounded-full bg-mistral-orange" />
                     <span className="truncate flex-1">{unode.data?.label || unode.type}</span>
                     <span className="ml-auto text-[9px] text-gray-500 font-mono px-1 bg-black rounded shrink-0">{unode.id}</span>
                 </div>
@@ -92,47 +143,39 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
     // Removed evaluateTemplate, now handled in App.tsx via onTestNode
 
     return (
-        <div className="flex h-full z-10 shrink-0 shadow-2xl">
-            <aside className="w-[320px] bg-[#151b2b] border-l border-mistral-border h-full flex flex-col">
-                <div className="flex-1 flex flex-col min-h-0">
-                    <div className="p-3 border-b border-mistral-border uppercase tracking-widest text-[10px] font-bold text-mistral-yellow bg-[#1a2234] flex items-center gap-2 shrink-0">
-                        <FileText className="w-4 h-4" /> INPUT DATA
-                    </div>
-                    <div className="p-2 space-y-2 flex-1 overflow-y-auto custom-scrollbar border-b border-mistral-border min-h-0 bg-[#0b101e]/30">
-                        {upstreamNodes && upstreamNodes.length > 0 ? (
-                            upstreamNodes.map((unode) => (
-                                <UpstreamDataViewer key={`${unode.id}-${unode.data?.responsePreview ? 'loaded' : 'null'}`} unode={unode} />
-                            ))
-                        ) : (
-                            <div className="text-xs text-gray-600 italic p-2 text-center mt-4">Sin datos de entrada</div>
-                        )}
-                    </div>
-
-                    <div className="p-3 border-b border-mistral-border uppercase tracking-widest text-[10px] font-bold text-green-400 bg-[#1a2234] flex items-center gap-2 shrink-0">
-                        <Terminal className="w-4 h-4" /> PREVIEW RESPUESTA
-                    </div>
-                    <div className="p-3 flex-1 overflow-y-auto custom-scrollbar min-h-0 bg-[#0b101e]/30">
-                        {selectedNode.data?.responsePreview ? (
-                            <div className="bg-[#0b101e] border border-green-900/50 rounded-md p-3 shadow-inner">
-                                <pre className="text-[10px] text-gray-300 font-mono whitespace-pre-wrap break-words">
-                                    {typeof selectedNode.data.responsePreview === 'object'
-                                        ? JSON.stringify(selectedNode.data.responsePreview, null, 2)
-                                        : String(selectedNode.data.responsePreview)}
-                                </pre>
-                            </div>
-                        ) : (
-                            <div className="text-[10px] text-gray-600 italic p-2 text-center mt-4">
-                                Ejecuta o Testea el nodo para ver su respuesta.
-                            </div>
-                        )}
-                    </div>
+        <>
+            <DraggablePanel title="INPUT DATA" icon={FileText} defaultPosition={{ x: 300, y: 80 }} colorClass="text-mistral-orange">
+                <div className="space-y-2">
+                    {upstreamNodes && upstreamNodes.length > 0 ? (
+                        upstreamNodes.map((unode) => (
+                            <UpstreamDataViewer key={`${unode.id}-${unode.data?.responsePreview ? 'loaded' : 'null'}`} unode={unode} />
+                        ))
+                    ) : (
+                        <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4">Sin datos de entrada</div>
+                    )}
                 </div>
-            </aside>
+            </DraggablePanel>
 
-            <aside className="w-[320px] bg-[#1a2234] border-l border-mistral-border h-full flex flex-col backdrop-blur-md bg-opacity-90">
+            <DraggablePanel title="PREVIEW RESPUESTA" icon={Terminal} defaultPosition={{ x: 300, y: 460 }} colorClass="text-green-400">
+                {selectedNode.data?.responsePreview ? (
+                    <div className="bg-[#171717] border-2 border-green-900/50 p-2 overflow-x-auto">
+                        <pre className="text-[10px] text-mistral-muted font-mono whitespace-pre-wrap break-words">
+                            {typeof selectedNode.data.responsePreview === 'object'
+                                ? JSON.stringify(selectedNode.data.responsePreview, null, 2)
+                                : String(selectedNode.data.responsePreview)}
+                        </pre>
+                    </div>
+                ) : (
+                    <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4">
+                        Ejecuta o Testea el nodo para ver su respuesta.
+                    </div>
+                )}
+            </DraggablePanel>
+
+            <aside className="w-[320px] bg-[#1a2234] border-l border-mistral-border h-full flex flex-col backdrop-blur-md bg-opacity-90 shrink-0 z-10 shadow-2xl">
                 <div className="p-4 border-b border-mistral-border flex items-center justify-between bg-mistral-panel shrink-0">
                     <div className="flex items-center gap-2 text-white">
-                        <Settings className="w-4 h-4 text-mistral-yellow" />
+                        <Settings className="w-4 h-4 text-mistral-orange" />
                         <h2 className="text-sm font-semibold">Configuración de Nodo</h2>
                     </div>
                     <button onClick={onClose} className="text-mistral-muted hover:text-white transition-colors">
@@ -153,7 +196,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Nombre del Nodo</label>
                         <input
                             type="text"
-                            className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow"
+                            className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                             value={selectedNode.data?.label || selectedNode.type}
                             onChange={(e) => onUpdateData({ label: e.target.value })}
                             placeholder="Mi Nodo"
@@ -164,7 +207,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         <>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Model Selection</label>
-                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow">
+                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange">
                                     <option>pixtral-12b-2409</option>
                                     <option>pixtral-large-latest</option>
                                 </select>
@@ -178,7 +221,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     ].map((tool) => (
                                         <label key={tool.id} className="flex items-center gap-3 cursor-pointer group">
                                             <div className="relative flex items-center">
-                                                <input type="checkbox" className="peer w-5 h-5 appearance-none border border-mistral-border rounded bg-mistral-bg checked:bg-mistral-yellow checked:border-mistral-yellow transition-colors" />
+                                                <input type="checkbox" className="peer w-5 h-5 appearance-none border border-mistral-border rounded bg-mistral-bg checked:bg-mistral-orange checked:border-mistral-orange transition-colors" />
                                                 <svg className="absolute w-3 h-3 text-black pointer-events-none opacity-0 peer-checked:opacity-100 left-1" viewBox="0 0 14 10" fill="none">
                                                     <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
@@ -191,7 +234,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">System Prompt</label>
                                 <textarea
-                                    className="w-full h-32 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow resize-none font-mono placeholder-gray-600"
+                                    className="w-full h-32 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
                                     defaultValue="Eres un asistente de visión diseñado para analizar facturas y recibos con precisión..."
                                 />
                             </div>
@@ -203,7 +246,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div className="bg-blue-400/10 border border-blue-400/30 p-3 rounded mb-4">
                                 <label className="block text-xs font-medium text-blue-300 mb-2 uppercase tracking-wide">Import cURL</label>
                                 <textarea
-                                    className="w-full h-16 bg-[#000] border border-blue-400/50 rounded-md px-3 py-2 text-[10px] text-blue-200 focus:outline-none focus:border-mistral-yellow resize-none font-mono placeholder-blue-800"
+                                    className="w-full h-16 bg-[#000] border border-blue-400/50 rounded-md px-3 py-2 text-[10px] text-blue-200 focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-blue-800"
                                     placeholder="Pega tu comando cURL aquí... se autocompletará abajo."
                                     onPaste={(e) => {
                                         const text = e.clipboardData.getData('text');
@@ -242,7 +285,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Método HTTP</label>
                                 <select
-                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                                     value={selectedNode.data?.method || 'GET'}
                                     onChange={(e) => onUpdateData({ method: e.target.value })}
                                 >
@@ -256,7 +299,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">URL</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-mistral-yellow"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-mistral-orange"
                                     placeholder="https://api.example.com/v1/..."
                                     value={selectedNode.data?.url || ''}
                                     onChange={(e) => onUpdateData({ url: e.target.value })}
@@ -265,7 +308,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Headers (JSON)</label>
                                 <textarea
-                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow resize-none font-mono"
+                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono"
                                     value={selectedNode.data?.headers || ''}
                                     onChange={(e) => onUpdateData({ headers: e.target.value })}
                                     placeholder={'{\n  "Authorization": "Bearer ..."\n}'}
@@ -279,7 +322,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     {selectedNode.type === 'mapperNode' && (
                         <>
                             <div className="bg-blue-400/10 border border-blue-400/30 p-3 rounded text-[11px] text-blue-200">
-                                Arrastra variables del menú izquierdo o usa <code className="bg-black/40 px-1 py-0.5 rounded text-mistral-yellow">{'{{ node_xx.data.field }}'}</code>.
+                                Arrastra variables del menú izquierdo o usa <code className="bg-black/40 px-1 py-0.5 rounded text-mistral-orange">{'{{ node_xx.data.field }}'}</code>.
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
@@ -313,7 +356,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                                     newMappings[idx].key = e.target.value;
                                                     onUpdateData({ mappings: newMappings });
                                                 }}
-                                                className="w-2/5 bg-mistral-bg border border-mistral-border rounded px-2 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-mistral-yellow"
+                                                className="w-2/5 bg-mistral-bg border border-mistral-border rounded px-2 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-mistral-orange"
                                             />
                                             <input
                                                 type="text"
@@ -324,7 +367,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                                     newMappings[idx].value = e.target.value;
                                                     onUpdateData({ mappings: newMappings });
                                                 }}
-                                                className="flex-1 bg-mistral-bg border border-mistral-border rounded px-2 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-mistral-yellow font-mono text-[10px]"
+                                                className="flex-1 bg-mistral-bg border border-mistral-border rounded px-2 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-mistral-orange font-mono text-[10px]"
                                             />
                                             <button
                                                 onClick={() => {
@@ -370,7 +413,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         <>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Model Selection</label>
-                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow">
+                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange">
                                     <option>codestral-latest</option>
                                     <option>codestral-mamba</option>
                                 </select>
@@ -378,7 +421,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Code Task</label>
                                 <textarea
-                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow resize-none font-mono"
+                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono"
                                     defaultValue="Genera una función en Python para iterar listas."
                                 />
                             </div>
@@ -390,7 +433,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Model Selection</label>
                                 <select
-                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                                     value={selectedNode.data?.model || 'mistral-large-latest'}
                                     onChange={(e) => onUpdateData({ model: e.target.value })}
                                 >
@@ -406,7 +449,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     System Prompt
                                 </label>
                                 <textarea
-                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow resize-none font-mono placeholder-gray-600"
+                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
                                     placeholder="Eres un asistente útil que responde siempre en español..."
                                     value={selectedNode.data?.systemPrompt || ''}
                                     onChange={(e) => onUpdateData({ systemPrompt: e.target.value })}
@@ -417,7 +460,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     User Message / Input
                                 </label>
                                 <textarea
-                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow resize-none font-mono placeholder-gray-600"
+                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
                                     placeholder="Resume el siguiente texto: {{ mapperNode.data.resumen }}..."
                                     value={selectedNode.data?.userMessage || ''}
                                     onChange={(e) => onUpdateData({ userMessage: e.target.value })}
@@ -430,7 +473,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         <>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Output Format</label>
-                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow">
+                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange">
                                     <option>Structured JSON (Schema)</option>
                                     <option>Markdown Text</option>
                                 </select>
@@ -446,7 +489,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         <>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Language</label>
-                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow">
+                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange">
                                     <option>Auto-detect</option>
                                     <option>English</option>
                                     <option>Spanish</option>
@@ -457,7 +500,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Audio Source</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-mistral-yellow"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-mistral-orange"
                                     placeholder="https://.../audio.mp3"
                                 />
                             </div>
@@ -468,7 +511,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         <>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Batch Endpoint</label>
-                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow">
+                                <select className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange">
                                     <option>/v1/chat/completions</option>
                                     <option>/v1/embeddings</option>
                                 </select>
@@ -485,7 +528,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Knowledge Base ID</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-mistral-yellow"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-mistral-orange"
                                     defaultValue="db_mistral_files_9x2a"
                                 />
                             </div>
@@ -501,7 +544,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Descripción Interna</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                                     defaultValue={selectedNode.data?.description || '200 OK'}
                                     onChange={(e) => onUpdateData({ description: e.target.value })}
                                 />
@@ -527,7 +570,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Descripción</label>
                                 <textarea
-                                    className="w-full h-20 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-yellow resize-none"
+                                    className="w-full h-20 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none"
                                     defaultValue={selectedNode.data?.description || ''}
                                 />
                             </div>
@@ -547,7 +590,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     </button>
                 </div>
             </aside>
-        </div>
+        </>
     );
 };
 
@@ -564,7 +607,7 @@ export const LogsPanel = ({ logs, isExecuting }: { logs: Array<{ time: string, m
                     let color = 'text-gray-300';
                     if (log.type === 'error') color = 'text-red-400';
                     if (log.type === 'success') color = 'text-green-400';
-                    if (log.type === 'warning') color = 'text-mistral-yellow';
+                    if (log.type === 'warning') color = 'text-mistral-orange';
                     if (log.type === 'info') color = 'text-blue-400';
 
                     return (
@@ -581,7 +624,7 @@ export const LogsPanel = ({ logs, isExecuting }: { logs: Array<{ time: string, m
             </div>
 
             <div className="p-4 bg-mistral-panel border-t border-mistral-border text-xs text-mistral-muted space-y-1">
-                <div className="flex justify-between"><span>Status:</span> <span className={isExecuting ? 'text-mistral-yellow animate-pulse' : 'text-green-400 font-medium'}>{isExecuting ? 'Running...' : 'Completado'}</span></div>
+                <div className="flex justify-between"><span>Status:</span> <span className={isExecuting ? 'text-mistral-orange animate-pulse' : 'text-green-400 font-medium'}>{isExecuting ? 'Running...' : 'Completado'}</span></div>
                 <div className="flex justify-between"><span>Tokens in/out:</span> <span>0 / 0</span></div>
             </div>
         </aside>

@@ -1,8 +1,9 @@
 import React from 'react';
 import {
-    MessageSquare, Eye, Play, Zap, Share2, Terminal,
-    Database, Layers, FileText, Mic, Globe, Send
+    Play, Zap, Share2,
+    Database, Layers, Globe, Send
 } from 'lucide-react';
+import { PixelMistralLogo, PixelRobot, PixelEye, PixelTerminal, PixelDocument } from './icons/PixelIcons';
 
 const categories = [
     {
@@ -16,12 +17,12 @@ const categories = [
     {
         name: 'Mistral Ecosystem',
         nodes: [
-            { name: 'Mistral LLM', icon: MessageSquare, type: 'mistralNode' },
-            { name: 'Mistral Chat (UI)', icon: MessageSquare, type: 'default' },
-            { name: 'Pixtral Vision/OCR', icon: Eye, type: 'pixtralNode' },
-            { name: 'Codestral', icon: Terminal, type: 'codestralNode' },
-            { name: 'Document AI', icon: FileText, type: 'documentAINode' },
-            { name: 'Mistral Audio', icon: Mic, type: 'audioNode' }
+            { name: 'Mistral LLM', icon: PixelRobot, type: 'mistralNode' },
+            { name: 'Mistral Chat (UI)', icon: PixelRobot, type: 'default' },
+            { name: 'Pixtral Vision/OCR', icon: PixelEye, type: 'pixtralNode' },
+            { name: 'Codestral', icon: PixelTerminal, type: 'codestralNode' },
+            { name: 'Document AI', icon: PixelDocument, type: 'documentAINode' },
+            { name: 'Mistral Audio', icon: PixelMistralLogo, type: 'audioNode' }
         ]
     },
     {
@@ -65,12 +66,13 @@ export const Sidebar = () => {
                     className="w-10 h-10 rounded-xl bg-[#f97316] hover:bg-[#ea580c] flex items-center justify-center shrink-0 transition-colors shadow-lg cursor-pointer"
                     title={isCollapsed ? "Expandir panel" : "Contraer panel"}
                 >
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 21V3H9.28014L12.0163 12.1627L14.7523 3H20V21H15.9392V8.66755L12.756 18.2396H11.2764L8.09322 8.66755V21H4Z" fill="white" />
-                    </svg>
+                    <PixelMistralLogo size={22} className="text-white drop-shadow-sm" />
                 </button>
                 {!isCollapsed && (
-                    <span className="font-bold text-white tracking-wide truncate">Mistral UI</span>
+                    <div className="flex items-center gap-2">
+                        <PixelMistralLogo className="w-5 h-5 text-mistral-orange" />
+                        <span className="font-bold text-white tracking-wide truncate">Mistral UI</span>
+                    </div>
                 )}
             </div>
 
@@ -87,13 +89,13 @@ export const Sidebar = () => {
                                     <div
                                         key={node.name}
                                         title={isCollapsed ? node.name : undefined}
-                                        className={`flex items-center ${isCollapsed ? 'justify-center p-3' : 'gap-3 p-2.5'} bg-transparent hover:bg-mistral-panel rounded-lg cursor-grab active:cursor-grabbing hover:ring-1 hover:ring-mistral-border transition-all group`}
+                                        className={`flex items-center ${isCollapsed ? 'justify-center p-3' : 'gap-3 p-2.5'} bg-transparent hover:bg-mistral-panel rounded-lg cursor-grab active:cursor-grabbing hover:ring-2 hover:ring-mistral-orange transition-all group`}
                                         draggable
                                         onDragStart={(e) => onDragStart(e, node.type)}
                                     >
-                                        <Icon className={`w-5 h-5 ${category.color} group-hover:scale-110 transition-transform shrink-0`} />
+                                        <Icon className={`w-5 h-5 ${category.color || 'text-mistral-orange'} group-hover:scale-110 transition-transform shrink-0 drop-shadow`} />
                                         {!isCollapsed && (
-                                            <span className="text-sm text-gray-300 group-hover:text-white truncate">{node.name}</span>
+                                            <span className="text-sm text-gray-300 group-hover:text-mistral-orange font-medium truncate tracking-wide">{node.name}</span>
                                         )}
                                     </div>
                                 );

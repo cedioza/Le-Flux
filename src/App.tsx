@@ -622,7 +622,7 @@ export default function App() {
       <footer className="h-12 bg-[#1a2234] border-t border-mistral-border flex items-center justify-between px-6 shrink-0 text-xs text-mistral-muted transition-colors">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${isExecuting ? 'bg-green-400 animate-pulse' : 'bg-mistral-yellow'}`} />
+            <div className={`w-2 h-2 rounded-full ${isExecuting ? 'bg-green-400 animate-pulse' : 'bg-mistral-orange'}`} />
             {isExecuting ? 'Ejecutándose' : 'Workflow válido'}
           </span>
           <span className="border-l border-mistral-border pl-4">Costo estimado $0.02</span>
