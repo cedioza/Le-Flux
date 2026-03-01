@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mistral-bg: #111827;
+  --color-mistral-panel: #1F2937;
+  --color-mistral-yellow: #FCD34D;
+  --color-mistral-hover: #FBBF24;
+  --color-mistral-border: #4B5563;
+  --color-mistral-text: #FFFFFF;
+  --color-mistral-muted: #D1D5DB;
+
+  --font-sans: "Inter", "SF Pro Display", sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-mistral-bg);
+    color: var(--color-mistral-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.react-flow__node {
+  @apply rounded-lg;
+}
+
+.react-flow__handle {
+  width: 10px;
+  height: 10px;
+  background-color: #FCD34D;
+  border: 2px solid #111827;
+}
+
+.react-flow__edge-path {
+  stroke: #FCD34D;
+  stroke-width: 3;
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 5;
+  animation: dashdraw 1s linear infinite;
+}
+
+@keyframes dashdraw {
+  from {
+    stroke-dashoffset: 10;
+  }
+}
