@@ -415,6 +415,45 @@ export default function App() {
         setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
+      } else if (node.type === 'pixtralNode') {
+        if (!credentials.mistralKey) throw new Error("Por favor ingresa tu Mistral API Key en las Credenciales.");
+        const prompt = replaceVariables(String(node.data?.prompt || 'What is in this image?'));
+        const imageSource = replaceVariables(String(node.data?.imageSource || ''));
+
+        if (!imageSource || !imageSource.startsWith('data:image')) {
+          throw new Error('Invalid or missing image source. Must be a base64 Data URI.');
+        }
+
+        const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${credentials.mistralKey}`
+          },
+          body: JSON.stringify({
+            model: 'pixtral-12b-2409',
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: prompt },
+                  { type: 'image_url', image_url: imageSource }
+                ]
+              }
+            ]
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.message || res.statusText);
+        }
+
+        const json = await res.json();
+        const output = json.choices[0]?.message?.content || json;
+        setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+        setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+
       } else if (node.type === 'huggingFaceNode') {
         if (!credentials.huggingFaceKey) throw new Error("Por favor ingresa tu Hugging Face API Key en las Credenciales.");
         const model = String(node.data?.model || 'meta-llama/Meta-Llama-3-8B-Instruct');
@@ -666,6 +705,81 @@ export default function App() {
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Mistral completado con éxito.`, type: 'success' }]);
         } catch (error: any) {
           setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Mistral: ${error.message}`, hasError: true } } : n));
+          hasError = true;
+          break;
+        }
+
+      } else if (node.type === 'pixtralNode') {
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando Pixtral Vision...`, type: 'warning' }]);
+
+        if (!credentials.mistralKey) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta Mistral API Key para Pixtral`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+        const replaceVariables = (text: string) => {
+          if (!text) return '';
+          return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
+            const parts = path.split('.');
+            let current: any = flowContext;
+            for (const p of parts) {
+              if (current && typeof current === 'object' && p in current) {
+                current = current[current.hasOwnProperty(p) ? p : p];
+              } else {
+                return 'null';
+              }
+            }
+            return typeof current === 'object' ? JSON.stringify(current) : String(current);
+          });
+        };
+
+        const prompt = replaceVariables(String(node.data?.prompt || 'What is in this image?'));
+        const imageSource = replaceVariables(String(node.data?.imageSource || ''));
+
+        if (!imageSource || !imageSource.startsWith('data:image')) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Fuente de imagen inválida o ausente. (Data URI Base64 requerido)`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+        try {
+          const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${credentials.mistralKey}`
+            },
+            body: JSON.stringify({
+              model: 'pixtral-12b-2409',
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { type: 'text', text: prompt },
+                    { type: 'image_url', image_url: imageSource }
+                  ]
+                }
+              ]
+            })
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.message || res.statusText);
+          }
+
+          const json = await res.json();
+          const output = json.choices[0]?.message?.content || json;
+
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+          setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+          flowContext[node.id] = { data: output };
+
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Pixtral completado con éxito.`, type: 'success' }]);
+        } catch (error: any) {
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Pixtral: ${error.message}`, hasError: true } } : n));
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error Pixtral: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
         }

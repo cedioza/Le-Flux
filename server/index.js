@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { executeHeadlessFlow } from './engine.js';
 
@@ -12,6 +13,8 @@ const __dirname = path.dirname(__filename);
 const DATA_FILE = path.join(__dirname, 'data', 'flows.json');
 const EXECUTIONS_FILE = path.join(__dirname, 'data', 'executions.json');
 const SETTINGS_FILE = path.join(__dirname, 'data', 'settings.json');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
 app.use(cors());
@@ -82,9 +85,20 @@ io.on('connection', (socket) => {
 });
 
 // API Webhook Route
-app.post('/api/webhook/:id', async (req, res) => {
+app.post('/api/webhook/:id', upload.any(), async (req, res) => {
     const { id } = req.params;
-    const payload = req.body;
+    let payload = req.body || {};
+
+    // Inyectar Archivos parseados como Base64 DataURIs en el Payload para compatibilidad
+    if (req.files && req.files.length > 0) {
+        if (!payload.files) payload.files = {};
+        req.files.forEach(file => {
+            const base64Str = file.buffer.toString('base64');
+            const dataUri = `data:${file.mimetype};base64,${base64Str}`;
+            payload.files[file.fieldname] = dataUri;
+        });
+        console.log(`[Webhook] Form-data procesado. ${req.files.length} archivo(s) parseados a Base64.`);
+    }
 
     console.log(`[Webhook] Peticion entrante para ID: ${id}`);
 

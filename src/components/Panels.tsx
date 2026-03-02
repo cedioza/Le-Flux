@@ -594,6 +594,32 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         </>
                     )}
 
+                    {selectedNode.type === 'pixtralNode' && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Image Source (URL or Base64 Variable)</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange font-mono"
+                                    value={selectedNode.data?.imageSource || '{{ webhookNode.data.files.imagen }}'}
+                                    onChange={(e) => onUpdateData({ imageSource: e.target.value })}
+                                    placeholder="{{ webhook.data.files.image }}"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
+                                    Vision Prompt
+                                </label>
+                                <textarea
+                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
+                                    placeholder="What is in this image?"
+                                    value={selectedNode.data?.prompt || 'Describe this image in detail.'}
+                                    onChange={(e) => onUpdateData({ prompt: e.target.value })}
+                                />
+                            </div>
+                        </>
+                    )}
+
                     {selectedNode.type === 'documentAINode' && (
                         <>
                             <div>

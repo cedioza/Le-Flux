@@ -265,7 +265,62 @@ export const executeHeadlessFlow = async (webhookId, initialPayload, nodes, edge
                 break;
             }
 
-            case 'pixtralNode':
+            case 'pixtralNode': {
+                console.log(`[Engine] Pixtral Vision Request`);
+
+                if (!mistralKey) {
+                    console.error('[Engine] Mistral API Key undefined para Pixtral.');
+                    flowContext[nodeId] = { error: 'Missing Mistral API Key para Pixtral' };
+                    hasError = true;
+                    break;
+                }
+
+                const prompt = evaluateTemplate(node.data?.prompt || 'What is in this image?', flowContext);
+                const imageSource = evaluateTemplate(node.data?.imageSource || '', flowContext);
+
+                if (!imageSource || !imageSource.startsWith('data:image')) {
+                    flowContext[nodeId] = { error: 'Invalid or missing image source. Must be a base64 Data URI.' };
+                    hasError = true;
+                    break;
+                }
+
+                try {
+                    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${mistralKey}`
+                        },
+                        body: JSON.stringify({
+                            model: 'pixtral-12b-2409',
+                            messages: [
+                                {
+                                    role: 'user',
+                                    content: [
+                                        { type: 'text', text: prompt },
+                                        { type: 'image_url', image_url: imageSource }
+                                    ]
+                                }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.message || response.statusText);
+                    }
+
+                    const data = await response.json();
+                    flowContext[nodeId] = data;
+                    console.log(`[Engine] Pixtral Responded OK`);
+                } catch (err) {
+                    flowContext[nodeId] = { error: err.message };
+                    console.error('[Engine] Pixtral Fetch Error:', err.message);
+                    hasError = true;
+                }
+                break;
+            }
+
             case 'codestralNode':
             case 'documentAINode':
             case 'audioNode':
