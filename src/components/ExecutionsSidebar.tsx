@@ -23,7 +23,7 @@ export const ExecutionsSidebar = ({ executions, activeExecutionId, onSelectExecu
                 <div className="flex items-center justify-between">
                     <h2 className="text-white font-semibold flex items-center gap-2">
                         <Clock className="w-4 h-4 text-mistral-orange" />
-                        Ejecuciones
+                        Executions
                     </h2>
                     <button className="text-mistral-muted hover:text-white p-1 rounded hover:bg-[#2d3748]">
                         <Filter className="w-4 h-4" />
@@ -34,7 +34,7 @@ export const ExecutionsSidebar = ({ executions, activeExecutionId, onSelectExecu
                     <Search className="w-3 h-3 text-mistral-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
                     <input
                         type="text"
-                        placeholder="Buscar por ID..."
+                        placeholder="Search by ID..."
                         className="w-full bg-[#0b101e] border border-mistral-border rounded-md pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-mistral-orange placeholder-gray-600 transition-colors"
                     />
                 </div>
@@ -43,8 +43,8 @@ export const ExecutionsSidebar = ({ executions, activeExecutionId, onSelectExecu
             <div className="flex-1 overflow-y-auto bg-mistral-bg">
                 {executions.length === 0 ? (
                     <div className="p-6 text-center text-mistral-muted text-sm italic">
-                        No hay ejecuciones recientes.
-                        <div className="mt-2 text-xs">Las llamadas a webhooks en producción aparecerán aquí.</div>
+                        No recent executions.
+                        <div className="mt-2 text-xs">Webhook calls in production will appear here.</div>
                     </div>
                 ) : (
                     <div className="divide-y divide-mistral-border">

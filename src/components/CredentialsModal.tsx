@@ -127,7 +127,7 @@ export const CredentialsModal = ({ isOpen, onClose, credentials, onSave }: Crede
                             value={localCreds.telegramToken}
                             onChange={(e) => setLocalCreds(prev => ({ ...prev, telegramToken: e.target.value }))}
                         />
-                        <p className="text-[10px] text-gray-500">Obtén esto hablando con @BotFather.</p>
+                        <p className="text-[10px] text-gray-500">Get this by talking to @BotFather on Telegram.</p>
                     </div>
 
                 </div>

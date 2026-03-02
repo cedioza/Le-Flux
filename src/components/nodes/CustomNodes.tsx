@@ -18,14 +18,14 @@ export const PixtralNode = ({ data, selected }: { data: any, selected: boolean }
                 {/* Dropzone */}
                 <div className="border border-dashed border-mistral-border rounded-md p-4 flex flex-col items-center justify-center gap-2 hover:border-mistral-orange cursor-pointer transition-colors bg-[#111827]">
                     <UploadCloud className="w-5 h-5 text-mistral-muted" />
-                    <span className="text-xs text-mistral-muted text-center">Sube imagen/PDF</span>
+                    <span className="text-xs text-mistral-muted text-center">Upload image/PDF</span>
                 </div>
 
                 {/* Checkboxes */}
                 <div className="space-y-2">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-mistral-orange focus:ring-mistral-orange focus:ring-offset-gray-800" defaultChecked />
-                        <span className="text-xs text-mistral-muted">OCR Extracción</span>
+                        <span className="text-xs text-mistral-muted">OCR Extraction</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-mistral-orange focus:ring-mistral-orange focus:ring-offset-gray-800" />
