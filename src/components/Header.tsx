@@ -25,7 +25,7 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
                     <div className="flex items-center justify-center text-mistral-orange drop-shadow-md">
                         <PixelMistralLogo size={32} />
                     </div>
-                    <span className="text-mistral-orange font-bold text-xl tracking-wide shrink-0">Mistral AI Studio</span>
+                    <span className="text-mistral-orange font-bold text-xl tracking-wide shrink-0">istral UI</span>
                 </div>
 
                 <div className="hidden md:flex items-center gap-4 ml-8 relative group">
