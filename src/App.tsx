@@ -191,6 +191,12 @@ export default function App() {
     setExecutionLogs([]);
   };
 
+  const handleRenameFlow = (flowId: string, newName: string) => {
+    const updatedFlows = flows.map(f => f.id === flowId ? { ...f, name: newName } : f);
+    setFlows(updatedFlows);
+    localStorage.setItem('leflux_flows', JSON.stringify(updatedFlows));
+  };
+
   const handleSaveFlow = () => {
     const updatedFlows = flows.map(f => {
       if (f.id === currentFlowId) {
@@ -201,9 +207,9 @@ export default function App() {
     setFlows(updatedFlows);
     localStorage.setItem('leflux_flows', JSON.stringify(updatedFlows));
 
-    // Guardar en backend (Producción Headless)
-    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Empujando flow y Settings al backend Headless...', type: 'info' }]);
-    socket.emit('save_flow', { nodes, edges, credentials });
+    // Guardar en backend (Producción Headless) - Enviar TODOS los flujos
+    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Empujando flows y Settings al backend Headless...', type: 'info' }]);
+    socket.emit('save_flow', { flows: updatedFlows, credentials });
   };
 
   useEffect(() => {
@@ -1121,6 +1127,7 @@ export default function App() {
         onSelectFlow={handleSelectFlow}
         onNewFlow={handleNewFlow}
         onSaveFlow={handleSaveFlow}
+        onRenameFlow={handleRenameFlow}
         onOpenCredentials={() => setIsCredentialsOpen(true)}
         onPlay={handlePlay}
         onStop={handleStop}
@@ -1137,7 +1144,7 @@ export default function App() {
           <Sidebar />
         ) : (
           <ExecutionsSidebar
-            executions={executions}
+            executions={executions.filter(e => !e.flowId || e.flowId === currentFlowId)}
             activeExecutionId={activeExecutionId}
             onSelectExecution={handleSelectExecution}
           />

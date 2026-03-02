@@ -40,7 +40,7 @@ if (!fs.existsSync(path.dirname(DATA_FILE))) {
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 }
 if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ nodes: [], edges: [] }));
+    fs.writeFileSync(DATA_FILE, JSON.stringify([]));
 }
 if (!fs.existsSync(EXECUTIONS_FILE)) {
     fs.writeFileSync(EXECUTIONS_FILE, JSON.stringify([]));
@@ -75,13 +75,15 @@ io.on('connection', (socket) => {
 
     socket.on('save_flow', (data) => {
         try {
-            const { nodes, edges, credentials } = data;
-            fs.writeFileSync(DATA_FILE, JSON.stringify({ nodes, edges }, null, 2));
+            const { flows, credentials } = data;
+            if (flows && Array.isArray(flows)) {
+                fs.writeFileSync(DATA_FILE, JSON.stringify(flows, null, 2));
+                console.log(`[Storage] ${flows.length} flujo(s) guardados correctamente.`);
+            }
             if (credentials) {
                 fs.writeFileSync(SETTINGS_FILE, JSON.stringify(credentials, null, 2));
                 console.log('[Storage] Settings/Credentials locales guardados (NoSQL File DB).');
             }
-            console.log('[Storage] Flujo guardado correctamente para Producción Headless.');
             socket.emit('save_flow_success');
         } catch (error) {
             console.error('[Storage] Error al guardar flujo:', error);
@@ -145,15 +147,34 @@ app.post('/api/webhook/:id', upload.any(), async (req, res) => {
     console.log(`[Webhook] Modo Produccion. Ejecutando Engine Headless...`);
     try {
         const rawData = fs.readFileSync(DATA_FILE, 'utf8');
-        const { nodes, edges } = JSON.parse(rawData);
+        const allFlows = JSON.parse(rawData);
+
+        // Buscar el flujo que contiene este webhook ID
+        let targetFlow = null;
+        if (Array.isArray(allFlows)) {
+            for (const flow of allFlows) {
+                const found = flow.nodes?.find(n => (n.type === 'webhookNode' || n.type === 'telegramTriggerNode') && n.id === id);
+                if (found) { targetFlow = flow; break; }
+            }
+        } else {
+            // Legacy format: { nodes, edges }
+            targetFlow = { id: 'legacy', nodes: allFlows.nodes, edges: allFlows.edges };
+        }
+
+        if (!targetFlow) {
+            return res.status(404).json({ error: 'Webhook Endpoint Not Found.' });
+        }
+
+        const { nodes: flowNodes, edges: flowEdges } = targetFlow;
 
         // Invocamos al motor headless
-        const execResult = await executeHeadlessFlow(id, payload, nodes, edges);
+        const execResult = await executeHeadlessFlow(id, payload, flowNodes, flowEdges);
 
         // Guardar la Ejecucion en Historial
         const newExecution = {
             id: `exec_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             webhookId: id,
+            flowId: targetFlow.id || 'unknown',
             timestamp: new Date().toISOString(),
             success: execResult.success,
             latency: execResult.latency,
@@ -162,16 +183,13 @@ app.post('/api/webhook/:id', upload.any(), async (req, res) => {
 
         const execData = fs.readFileSync(EXECUTIONS_FILE, 'utf8');
         const executions = JSON.parse(execData);
-        executions.unshift(newExecution); // add to top
-        // Limitar a últimos 200 logs
+        executions.unshift(newExecution);
         const limitedExecutions = executions.slice(0, 200);
         fs.writeFileSync(EXECUTIONS_FILE, JSON.stringify(limitedExecutions, null, 2));
 
-        // Notificar via WebSocket
         io.emit('new_execution', newExecution);
 
-        // Si el motor guardó estado para un "responseNode", devolvemos esa info como API Response literal.
-        const responseNode = nodes.find(n => n.type === 'responseNode');
+        const responseNode = flowNodes.find(n => n.type === 'responseNode');
         if (responseNode && execResult.nodesContext[responseNode.id]) {
             res.status(200).json(execResult.nodesContext[responseNode.id]);
         } else {
@@ -180,11 +198,11 @@ app.post('/api/webhook/:id', upload.any(), async (req, res) => {
     } catch (error) {
         console.error('[Webhook] Error en Headless:', error);
 
-        // Guardar el error también en Historial
         try {
             const errorExecution = {
                 id: `exec_err_${Date.now()}`,
                 webhookId: id,
+                flowId: 'unknown',
                 timestamp: new Date().toISOString(),
                 success: false,
                 latency: 0,
@@ -282,11 +300,14 @@ function processTelegramUpdate(update) {
     console.log(`[Telegram] Mensaje entrante de @${payload.username}: ${payload.text}`);
 
     try {
-        const fileContent = fs.readFileSync(FLOW_FILE, 'utf8');
-        const flows = JSON.parse(fileContent);
+        const fileContent = fs.readFileSync(DATA_FILE, 'utf8');
+        const allFlows = JSON.parse(fileContent);
+
+        // Support both array (new) and legacy object format
+        const flowsArray = Array.isArray(allFlows) ? allFlows : [{ id: 'legacy', nodes: allFlows.nodes, edges: allFlows.edges, name: 'Legacy' }];
 
         let targetFlows = [];
-        for (const flow of flows) {
+        for (const flow of flowsArray) {
             const hasHook = flow.nodes?.find(n => n.type === 'telegramTriggerNode');
             if (hasHook) {
                 targetFlows.push({ flow, triggerId: hasHook.id });
@@ -304,7 +325,26 @@ function processTelegramUpdate(update) {
             } else {
                 console.log(`[Telegram] Ejecutando Flujo Background: ${flow.name}`);
                 executeHeadlessFlow(triggerId, payload, flow.nodes, flow.edges)
-                    .then(result => console.log(`[Telegram] Flujo [${flow.name}] finalizado OK.`))
+                    .then(result => {
+                        // Guardar Ejecucion
+                        const newExecution = {
+                            id: `exec_tg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                            webhookId: triggerId,
+                            flowId: flow.id || 'unknown',
+                            timestamp: new Date().toISOString(),
+                            success: result.success,
+                            latency: result.latency,
+                            nodesContext: result.nodesContext
+                        };
+                        try {
+                            const execData = fs.readFileSync(EXECUTIONS_FILE, 'utf8');
+                            const executions = JSON.parse(execData);
+                            executions.unshift(newExecution);
+                            fs.writeFileSync(EXECUTIONS_FILE, JSON.stringify(executions.slice(0, 200), null, 2));
+                            io.emit('new_execution', newExecution);
+                        } catch (e) { }
+                        console.log(`[Telegram] Flujo [${flow.name}] finalizado OK.`);
+                    })
                     .catch(err => console.error(`[Telegram] Error en flujo [${flow.name}]:`, err));
             }
         }

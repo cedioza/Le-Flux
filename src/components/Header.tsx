@@ -7,6 +7,7 @@ interface HeaderProps {
     onSelectFlow: (id: string) => void;
     onNewFlow: () => void;
     onSaveFlow: () => void;
+    onRenameFlow: (id: string, newName: string) => void;
     onPlay: () => void;
     onStop: () => void;
     isExecuting: boolean;
@@ -15,7 +16,7 @@ interface HeaderProps {
     onOpenCredentials?: () => void;
 }
 
-export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFlow, onPlay, onStop, isExecuting, viewMode, onChangeViewMode, onOpenCredentials }: HeaderProps) => {
+export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFlow, onRenameFlow, onPlay, onStop, isExecuting, viewMode, onChangeViewMode, onOpenCredentials }: HeaderProps) => {
     return (
         <header className="relative h-16 bg-mistral-bg border-b border-mistral-border flex items-center justify-between px-6 shrink-0 z-50">
             <div className="flex items-center gap-6">
@@ -28,12 +29,15 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
                 </div>
 
                 <div className="hidden md:flex items-center gap-4 ml-8 relative group">
-                    <button className="flex items-center gap-2 bg-[#1a2234] border border-mistral-border px-3 py-1.5 rounded text-sm text-white hover:border-mistral-orange transition-colors">
-                        <span className="truncate max-w-[150px]">
-                            {flows.find(f => f.id === currentFlowId)?.name || 'Untitled Flow'}
-                        </span>
+                    <div className="flex items-center gap-2 bg-[#1a2234] border border-mistral-border px-3 py-1.5 rounded text-sm text-white hover:border-mistral-orange transition-colors focus-within:border-mistral-orange">
+                        <input
+                            type="text"
+                            className="bg-transparent border-none outline-none text-white w-32 focus:w-48 transition-all"
+                            value={flows.find(f => f.id === currentFlowId)?.name || 'Untitled Flow'}
+                            onChange={(e) => onRenameFlow(currentFlowId, e.target.value)}
+                        />
                         <ChevronDown className="w-4 h-4 text-mistral-muted" />
-                    </button>
+                    </div>
 
                     <div className="absolute top-full left-0 mt-1 w-48 bg-mistral-panel border border-mistral-border rounded shadow-xl hidden group-hover:block">
                         <div className="py-1 max-h-48 overflow-y-auto">

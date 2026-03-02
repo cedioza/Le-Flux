@@ -3,6 +3,7 @@ import { Clock, CheckCircle2, XCircle, Search, Filter } from 'lucide-react';
 export interface ExecutionData {
     id: string;
     webhookId: string;
+    flowId?: string;
     timestamp: string;
     success: boolean;
     latency: number;

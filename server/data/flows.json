@@ -1,39 +1,168 @@
 {
   "nodes": [
     {
-      "id": "node_1772415450344",
-      "type": "telegramTriggerNode",
+      "id": "node_1772399872256",
+      "type": "webhookNode",
       "position": {
-        "x": -76.30574814075419,
-        "y": -83.30898387759336
+        "x": -146.8572764392407,
+        "y": -60.16585821119459
       },
       "data": {
-        "label": "New telegramTrigger"
+        "label": "New webhook",
+        "responsePreview": {
+          "files": {
+            "imagen": "https://res.cloudinary.com/dezprf2aq/image/upload/v1772413543/brsocwk9fp1ngxr6rwhs.png"
+          }
+        },
+        "hasError": false,
+        "isExecuting": false
       },
       "measured": {
         "width": 220,
-        "height": 110
+        "height": 96
       },
       "selected": false,
       "dragging": false
     },
     {
-      "id": "node_1772415453491",
-      "type": "telegramMessageNode",
+      "id": "node_1772407311369",
+      "type": "responseNode",
       "position": {
-        "x": 593.5261356322766,
-        "y": -57.82070823935018
+        "x": 815.4080926646484,
+        "y": 13.869647204957971
       },
       "data": {
-        "label": "New telegramMessage"
+        "label": "",
+        "hasError": false,
+        "responseMode": "all",
+        "responseBody": "{\"key\":\"hola mundo\"}",
+        "responsePreview": {
+          "node_1772399872256": {
+            "files": {
+              "imagen": "https://res.cloudinary.com/dezprf2aq/image/upload/v1772413543/brsocwk9fp1ngxr6rwhs.png"
+            }
+          },
+          "node_1772407608671": {
+            "id": "a475ebfc32ff4b39930e116dd7ac9b68",
+            "created": 1772413544,
+            "model": "mistral-small-latest",
+            "usage": {
+              "prompt_tokens": 48,
+              "total_tokens": 104,
+              "completion_tokens": 56,
+              "prompt_tokens_details": {
+                "cached_tokens": 0
+              }
+            },
+            "object": "chat.completion",
+            "choices": [
+              {
+                "index": 0,
+                "finish_reason": "stop",
+                "message": {
+                  "role": "assistant",
+                  "tool_calls": null,
+                  "content": "¡Hola! Soy el asistente virtual de la veterinaria. ¿En qué puedo ayudarte hoy? ¿Necesitas agendar una cita, información sobre algún servicio o tienes alguna consulta sobre la salud de tu mascota? Estoy aquí para ayudarte."
+                }
+              }
+            ]
+          }
+        }
       },
       "measured": {
-        "width": 220,
-        "height": 89
+        "width": 200,
+        "height": 86
+      },
+      "selected": true,
+      "dragging": false
+    },
+    {
+      "id": "node_1772407608671",
+      "type": "mistralNode",
+      "position": {
+        "x": 172.53158704329218,
+        "y": -82.97992224918673
+      },
+      "data": {
+        "label": "New mistral",
+        "model": "mistral-small-latest",
+        "systemPrompt": "eres un asistente enfocado en la atención de una veterinaria  llevaras toda la información del cliente ",
+        "userMessage": "{{ node_1772399872256.data.mensaje }}",
+        "responsePreview": {
+          "id": "a475ebfc32ff4b39930e116dd7ac9b68",
+          "created": 1772413544,
+          "model": "mistral-small-latest",
+          "usage": {
+            "prompt_tokens": 48,
+            "total_tokens": 104,
+            "completion_tokens": 56,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "object": "chat.completion",
+          "choices": [
+            {
+              "index": 0,
+              "finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "tool_calls": null,
+                "content": "¡Hola! Soy el asistente virtual de la veterinaria. ¿En qué puedo ayudarte hoy? ¿Necesitas agendar una cita, información sobre algún servicio o tienes alguna consulta sobre la salud de tu mascota? Estoy aquí para ayudarte."
+              }
+            }
+          ]
+        },
+        "hasError": false
+      },
+      "measured": {
+        "width": 240,
+        "height": 132
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "node_1772413568652",
+      "type": "pixtralNode",
+      "position": {
+        "x": 475.4172632232679,
+        "y": -82.73184040005461
+      },
+      "data": {
+        "label": "New pixtral",
+        "imageSource": "{{ node_1772399872256.data.files.imagen }}",
+        "responsePreview": "This image is a webpage for a real estate company named \"Martinez Inmobiliaria.\" Here's a detailed summary of the elements present in the image:\n\n1. **Header:**\n   - The header features the company's logo and name \"martinez Inmobiliaria.\"\n   - There is a navigation menu with the following options: Inicio (Home), Propiedades (Properties), Quiero comprar (I want to buy), Quiero vender (I want to sell), Quiero alquilar (I want to rent), Nosotros (About Us), Blog, and Contacto (Contact).\n\n2. **Hero Section:**\n   - A large, visually appealing image of a luxurious terrace overlooking the Mediterranean Sea.\n   - The headline reads: \"ENCUENTRA TU HOGAR A MINUTOS DEL MEDITERRÁNEO\" (Find your home minutes from the Mediterranean).\n   - A call-to-action button: \"Quiero encontrar mi casa\" (I want to find my house).\n\n3. **Testimonial Section:**\n   - A testimonial from Jorge Novo, stating: \"100% recomendable. Trato muy profesional y cercano. Muy implicados en el proyecto desde el principio. ¡Gracias!\" (100% recommendable. Very professional and close treatment. Very involved in the project from the beginning. Thanks!).\n   - The section also includes a tagline: \"Confía en nosotros como tu personal shopper inmobiliario para potenciar tu inversión\" (Trust us as your personal real estate shopper to enhance your investment).\n   - An image of a luxurious living room with a view of the Mediterranean.\n\n4. **Why Invest in Alicante Section:**\n   - The section is titled: \"¿POR QUÉ INVERTIR EN ALICANTE?\" (Why invest in Alicante?).\n   - It lists several benefits with placeholder text:\n     - Ut lorem ipsum deler sit amet, consectetur adipiscing elit, sed do eiusmod tempor.\n     - Eire eiby altir inapperemotast sinowecardatiam entis mognashior in alicante et evolobtum.\n     - Impseas solvaticlice neredia in easrkn oonos in amxvsstnsti undersadorum.\n   - An accompanying image of a modern building with a view of the sea.\n\n5. **Where to Invest Section:**\n   - The section is titled: \"¿DÓNDE PUEDO INVERTIR?\" (Where can I invest?).\n   - It provides a brief description with placeholder text:\n     - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n     - Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n     - Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n   - An image of a modern interior with a view of the Mediterranean.\n\n6. **Footer:**\n   - The footer includes the company logo and a brief mention of their services.\n   - It has sections for Navigation, Legal, and Contact information:\n     - Navigation: Inicio (Home), Propiedades (Properties), Quiero comprar (I want to buy), Quiero vender (I want to sell), Quiero alquilar (I want to rent), Nosotros (About Us).\n     - Legal: Acción (Action), Legal, Grupo oerocool, Shopper inmobiliario, Resocuados (Resources), Contacto (Contact).\n     - Contact information: Contacto es info, phone number, email, and social media icons for Facebook, Twitter, Instagram, and LinkedIn.\n   - Additional information: \"Integrado con un social inmobiliario\" (Integrated with a real estate social network).\n   - Logos indicating financing by the European Union and other certifications.\n\nThe overall design is clean, professional, and focused on showcasing luxurious properties and promoting investment in Alicante."
+      },
+      "measured": {
+        "width": 240,
+        "height": 203
       },
       "selected": false,
       "dragging": false
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "source": "node_1772399872256",
+      "target": "node_1772407608671",
+      "animated": true,
+      "type": "deletableEdge",
+      "id": "xy-edge__node_1772399872256-node_1772407608671"
+    },
+    {
+      "source": "node_1772407608671",
+      "target": "node_1772413568652",
+      "animated": true,
+      "type": "deletableEdge",
+      "id": "xy-edge__node_1772407608671-node_1772413568652"
+    },
+    {
+      "source": "node_1772413568652",
+      "target": "node_1772407311369",
+      "animated": true,
+      "type": "deletableEdge",
+      "id": "xy-edge__node_1772413568652-node_1772407311369"
+    }
+  ]
 }
