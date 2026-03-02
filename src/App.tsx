@@ -1201,6 +1201,7 @@ export default function App() {
           <SettingsPanel
             selectedNode={selectedNode}
             upstreamNodes={upstreamNodes}
+            credentials={credentials}
             onClose={() => setSelectedNode(null)}
             onDelete={onDeleteNode}
             onUpdateData={(newData) => {

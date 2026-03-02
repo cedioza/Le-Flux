@@ -57,7 +57,7 @@ const DraggablePanel = ({ title, icon: Icon, children, defaultPosition, colorCla
     );
 };
 
-export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, onTestNode, upstreamNodes = [] }: { selectedNode: any, onClose: () => void, onDelete: (id: string) => void, onUpdateData: (newData: any) => void, onTestNode: () => void, upstreamNodes?: any[] }) => {
+export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, onTestNode, upstreamNodes = [], credentials }: { selectedNode: any, onClose: () => void, onDelete: (id: string) => void, onUpdateData: (newData: any) => void, onTestNode: () => void, upstreamNodes?: any[], credentials?: any }) => {
     if (!selectedNode) return null;
 
     const isPixtral = selectedNode.type === 'pixtralNode';
@@ -518,16 +518,36 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                         type="text"
                                         readOnly
                                         className="flex-1 bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-[10px] text-gray-400 font-mono"
-                                        value={`https://tu-dominio.com/api/telegram-webhook/${selectedNode.id}`}
-                                    />
-                                    <button
-                                        onClick={() => navigator.clipboard.writeText(`https://tu-dominio.com/api/telegram-webhook/${selectedNode.id}`)}
+                                        onClick={() => navigator.clipboard.writeText(`${window.location.origin}/api/telegram-webhook/${selectedNode.id}`)}
                                         className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors truncate"
                                     >Copiar</button>
                                 </div>
                                 <div className="text-[10px] text-gray-500 mb-4 bg-white/5 p-2 rounded">
                                     Esta ruta extraerá automáticamente el <code>chat.id</code>, el <code>text</code> y el <code>username</code> del usuario.
                                 </div>
+                                <button
+                                    onClick={async () => {
+                                        if (!credentials?.telegramToken) {
+                                            alert("Primero configura tu Telegram Bot Token en el panel de Credenciales (arriba a la derecha).");
+                                            return;
+                                        }
+                                        const url = `${window.location.origin}/api/telegram-webhook/${selectedNode.id}`;
+                                        try {
+                                            const res = await fetch(`https://api.telegram.org/bot${credentials.telegramToken}/setWebhook?url=${encodeURIComponent(url)}`);
+                                            const data = await res.json();
+                                            if (data.ok) {
+                                                alert("Webhook registrado exitosamente en Telegram!\nTodo el chat llegará a este nodo automáticamente.");
+                                            } else {
+                                                alert(`Error de Telegram: ${data.description}`);
+                                            }
+                                        } catch (e: any) {
+                                            alert("Error de red: " + e.message);
+                                        }
+                                    }}
+                                    className="w-full font-bold uppercase tracking-widest text-[10px] py-2 mb-2 rounded transition-colors bg-[#0088cc] hover:bg-[#0077b3] text-white border border-[#005f99] shadow-lg"
+                                >
+                                    Vincular Bot Automáticamente
+                                </button>
                                 <button
                                     onClick={handleTestWebhook}
                                     disabled={isListening}
