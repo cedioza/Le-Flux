@@ -6,6 +6,7 @@ interface Credentials {
     mistralKey: string;
     huggingFaceKey: string;
     elevenLabsKey: string;
+    telegramToken: string;
 }
 
 interface CredentialsModalProps {
@@ -19,7 +20,8 @@ export const CredentialsModal = ({ isOpen, onClose, credentials, onSave }: Crede
     const [localCreds, setLocalCreds] = useState<Credentials>({
         mistralKey: '',
         huggingFaceKey: '',
-        elevenLabsKey: ''
+        elevenLabsKey: '',
+        telegramToken: ''
     });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -28,7 +30,8 @@ export const CredentialsModal = ({ isOpen, onClose, credentials, onSave }: Crede
             setLocalCreds({
                 mistralKey: credentials.mistralKey || '',
                 huggingFaceKey: credentials.huggingFaceKey || '',
-                elevenLabsKey: credentials.elevenLabsKey || ''
+                elevenLabsKey: credentials.elevenLabsKey || '',
+                telegramToken: credentials.telegramToken || ''
             });
         }
     }, [isOpen, credentials]);
@@ -112,17 +115,19 @@ export const CredentialsModal = ({ isOpen, onClose, credentials, onSave }: Crede
                         <p className="text-[10px] text-gray-500">Required for Text-to-Speech nodes.</p>
                     </div>
 
-                    {/* Telegram Placeholder */}
-                    <div className="space-y-2 opacity-50 grayscale pointer-events-none">
+                    {/* Telegram Token */}
+                    <div className="space-y-2">
                         <label className="flex items-center gap-2 text-sm font-semibold text-gray-200">
                             ✈️ Telegram Bot Token
                         </label>
                         <input
                             type="password"
-                            className="w-full bg-[#1a2234] border border-mistral-border rounded-md px-3 py-2 text-sm text-white font-mono placeholder:text-gray-600"
-                            placeholder="123456:ABC-DEF1234... (Coming Soon)"
-                            disabled
+                            className="w-full bg-[#1a2234] border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0088cc] focus:ring-1 focus:ring-[#0088cc] transition-all font-mono placeholder:text-gray-600"
+                            placeholder="123456:ABC-DEF1234..."
+                            value={localCreds.telegramToken}
+                            onChange={(e) => setLocalCreds(prev => ({ ...prev, telegramToken: e.target.value }))}
                         />
+                        <p className="text-[10px] text-gray-500">Obtén esto hablando con @BotFather.</p>
                     </div>
 
                 </div>

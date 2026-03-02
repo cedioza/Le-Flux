@@ -1,3 +1,5 @@
 {
-  "MISTRAL_API_KEY": "8RFuxUADJprCkyFOkCrHRVCTNk9UqIvh"
+  "mistralKey": "8RFuxUADJprCkyFOkCrHRVCTNk9UqIvh",
+  "huggingFaceKey": "",
+  "elevenLabsKey": ""
 }

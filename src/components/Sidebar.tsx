@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     Play, Zap, Share2,
-    Database, Layers, Globe, Send
+    Database, Layers, Globe, Send, MessageCircle
 } from 'lucide-react';
 import { PixelMistralLogo, PixelRobot, PixelEye, PixelTerminal, PixelDocument } from './icons/PixelIcons';
 
@@ -38,14 +38,16 @@ const categories = [
         name: 'Integrations',
         color: 'text-blue-400',
         nodes: [
-            { name: 'HTTP Request', icon: Globe, type: 'httpNode' }
+            { name: 'HTTP Request', icon: Globe, type: 'httpNode' },
+            { name: 'Telegram Trigger', icon: MessageCircle, type: 'telegramTriggerNode' }
         ]
     },
     {
         name: 'Outputs',
         color: 'text-mistral-muted',
         nodes: [
-            { name: 'Response', icon: Send, type: 'responseNode' }
+            { name: 'Response', icon: Send, type: 'responseNode' },
+            { name: 'Telegram Message', icon: Send, type: 'telegramMessageNode' }
         ]
     }
 ];

@@ -44,9 +44,10 @@ export const executeHeadlessFlow = async (webhookId, initialPayload, nodes, edge
     const mistralKey = process.env.MISTRAL_API_KEY || settingsData.mistralKey || settingsData.MISTRAL_API_KEY;
     const huggingFaceKey = process.env.HUGGINGFACE_API_KEY || settingsData.huggingFaceKey;
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY || settingsData.elevenLabsKey;
+    const telegramToken = process.env.TELEGRAM_BOT_TOKEN || settingsData.telegramToken;
 
     // 1. Encontrar y popular el Webhook Trigger
-    const webhookNode = nodes.find(n => n.type === 'webhookNode' && (
+    const webhookNode = nodes.find(n => (n.type === 'webhookNode' || n.type === 'telegramTriggerNode') && (
         n.id === webhookId ||
         (n.data?.url && n.data.url.endsWith(webhookId))
     ));
@@ -282,6 +283,50 @@ export const executeHeadlessFlow = async (webhookId, initialPayload, nodes, edge
                     }
                 } catch (e) {
                     flowContext[nodeId] = { error: 'No se pudo serializar el estado del flujo.' };
+                }
+                break;
+            }
+
+            case 'telegramMessageNode': {
+                console.log(`[Engine] Telegram Message Execution`);
+
+                if (!telegramToken) {
+                    console.error('[Engine] Telegram Bot Token undefined.');
+                    flowContext[nodeId] = { error: 'Missing Telegram Token' };
+                    hasError = true;
+                    break;
+                }
+
+                const chatId = evaluateTemplate(String(node.data?.chatId || ''), flowContext);
+                const textMessage = evaluateTemplate(String(node.data?.message || ''), flowContext);
+
+                if (!chatId) {
+                    console.error('[Engine] Telegram Chat ID Invalido.');
+                    flowContext[nodeId] = { error: 'Invalid Chat ID' };
+                    hasError = true;
+                    break;
+                }
+
+                try {
+                    const res = await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ chat_id: chatId, text: textMessage })
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.description || res.statusText);
+                    }
+
+                    flowContext[nodeId] = { success: true, message: `Mensaje enviado a ${chatId}` };
+                    console.log(`[Engine] Telegram Message Sender OK`);
+                } catch (err) {
+                    flowContext[nodeId] = { error: err.message };
+                    console.error('[Engine] Telegram Error:', err.message);
+                    hasError = true;
                 }
                 break;
             }

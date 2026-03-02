@@ -494,6 +494,80 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         </>
                     )}
 
+                    {selectedNode.type === 'telegramTriggerNode' && (
+                        <>
+                            <div className={`border p-3 rounded text-xs mb-4 flex flex-col items-center justify-center transition-colors ${isListening ? 'bg-[#0088cc]/10 border-[#0088cc]/30 text-[#0088cc]' : 'bg-mistral-panel border-mistral-border text-mistral-muted'}`}>
+                                {isListening ? (
+                                    <>
+                                        <div className="flex items-center gap-2 font-bold mb-1 animate-pulse text-[#0088cc]">
+                                            <div className="w-2 h-2 bg-[#0088cc] rounded-full"></div> ESPERANDO MENSAJES TELEGRAM...
+                                        </div>
+                                        <span className="font-mono">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                                    </>
+                                ) : (
+                                    <div className="text-center text-xs">
+                                        Modo Testing desactivado. Envía algo por Telegram y aparecerá aquí.<br />
+                                        <span className="text-[#0088cc] font-bold mt-2 block">Copia esta URL y fíjala con setWebhook en la API de Telegram.</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Telegram Webhook URL</label>
+                                <div className="flex gap-2 mb-4">
+                                    <input
+                                        type="text"
+                                        readOnly
+                                        className="flex-1 bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-[10px] text-gray-400 font-mono"
+                                        value={`https://tu-dominio.com/api/telegram-webhook/${selectedNode.id}`}
+                                    />
+                                    <button
+                                        onClick={() => navigator.clipboard.writeText(`https://tu-dominio.com/api/telegram-webhook/${selectedNode.id}`)}
+                                        className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors truncate"
+                                    >Copiar</button>
+                                </div>
+                                <div className="text-[10px] text-gray-500 mb-4 bg-white/5 p-2 rounded">
+                                    Esta ruta extraerá automáticamente el <code>chat.id</code>, el <code>text</code> y el <code>username</code> del usuario.
+                                </div>
+                                <button
+                                    onClick={handleTestWebhook}
+                                    disabled={isListening}
+                                    className={`w-full font-bold uppercase tracking-widest text-[10px] py-3 rounded transition-colors ${isListening ? 'bg-mistral-bg text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-[#0088cc]/20 text-[#0088cc] hover:bg-[#0088cc]/30 border border-[#0088cc]/50'}`}
+                                >
+                                    {isListening ? 'Detener Test' : '▶ Activar Escucha (2 Mins)'}
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {selectedNode.type === 'telegramMessageNode' && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
+                                    Target Chat ID
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white font-mono placeholder-gray-600 focus:outline-none focus:border-[#0088cc]"
+                                    placeholder="{{ telegramTriggerNode.data.chat_id }}"
+                                    value={selectedNode.data?.chatId || ''}
+                                    onChange={(e) => onUpdateData({ chatId: e.target.value })}
+                                />
+                                <div className="text-[10px] text-gray-500 mt-1">Chat ID de Telegram de destino (ej. 123456789 o {'{{ nodo... }}'}).</div>
+                            </div>
+                            <div className="mt-4">
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
+                                    Message Text
+                                </label>
+                                <textarea
+                                    className="w-full h-32 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0088cc] resize-none font-mono placeholder-gray-600"
+                                    placeholder="Respuesta autogenerada de: {{ pixtralNode.data.responsePreview }}"
+                                    value={selectedNode.data?.message || ''}
+                                    onChange={(e) => onUpdateData({ message: e.target.value })}
+                                />
+                            </div>
+                        </>
+                    )}
+
                     {selectedNode.type === 'codestralNode' && (
                         <>
                             <div>

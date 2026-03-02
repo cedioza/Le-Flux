@@ -1,5 +1,5 @@
 import { Handle, Position } from '@xyflow/react';
-import { UploadCloud, Layers, Database } from 'lucide-react';
+import { UploadCloud, Layers, Database, Send, MessageCircle } from 'lucide-react';
 import { PixelMistralLogo, PixelRobot, PixelEye, PixelTerminal, PixelDocument } from '../icons/PixelIcons';
 
 export const PixtralNode = ({ data, selected }: { data: any, selected: boolean }) => {
@@ -302,6 +302,41 @@ export const ElevenLabsNode = ({ data, selected }: { data: any, selected: boolea
                 </div>
             </div>
             <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-indigo-400 !border-mistral-bg" />
+        </div>
+    );
+};
+
+export const TelegramTriggerNode = ({ data, selected }: { data: any, selected: boolean }) => {
+    return (
+        <div className={`w-[220px] bg-mistral-panel rounded-lg shadow-xl overflow-hidden border ${selected ? 'border-[#0088cc] ring-2 ring-[#0088cc]/50' : 'border-mistral-border'} ${data.isExecuting ? 'ring-4 ring-green-500 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : ''} transition-all duration-300`}>
+            <div className="bg-[#0088cc]/20 px-3 py-2 flex items-center gap-2 border-b border-[#0088cc]/30">
+                <MessageCircle className="w-4 h-4 text-[#0088cc]" />
+                <span className="text-white font-bold text-sm">Telegram Bot</span>
+                <span className="ml-auto text-[10px] text-green-400 font-mono animate-pulse">Listening...</span>
+            </div>
+            <div className="p-3">
+                <div className="bg-[#111827] text-[#0088cc] text-[10px] p-2 rounded border border-[#0088cc]/30 font-mono break-all line-clamp-2">
+                    {data.url || 'https://leflux.ai/api/telegram-webhook/123'}
+                </div>
+            </div>
+            <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-mistral-orange !border-mistral-bg" />
+        </div>
+    );
+};
+
+export const TelegramMessageNode = ({ data, selected }: { data: any, selected: boolean }) => {
+    return (
+        <div className={`w-[220px] bg-mistral-panel rounded-lg shadow-xl overflow-hidden border ${selected ? 'border-[#0088cc] ring-2 ring-[#0088cc]/50' : 'border-mistral-border'} ${data.isExecuting ? 'ring-4 ring-green-500 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : ''} transition-all duration-300`}>
+            <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-mistral-orange !border-mistral-bg" />
+            <div className="bg-[#0088cc] px-3 py-2 flex items-center gap-2 border-b border-[#004f7a]">
+                <Send className="w-4 h-4 text-white" />
+                <span className="text-white font-bold text-sm drop-shadow-md">Send Telegram</span>
+            </div>
+            <div className="p-3 bg-[#111827]">
+                <div className="text-[10px] text-mistral-muted truncate hidden">Chat ID: {data.chatId || '{{ telegramNode.data.chat_id }}'}</div>
+                <div className="text-[10px] text-gray-300 truncate max-w-[180px] bg-white/5 p-1 rounded mt-1">"{data.message || 'Escribe un mensaje'}"</div>
+            </div>
+            <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-mistral-orange !border-mistral-bg" />
         </div>
     );
 };

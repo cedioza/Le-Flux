@@ -221,6 +221,66 @@ if (fs.existsSync(distPath)) {
     });
 }
 
+// Telegram Webhook Route
+app.post('/api/telegram-webhook/:id', async (req, res) => {
+    const { id } = req.params;
+    const body = req.body || {};
+
+    // Telegram usually sends updates in `message` or `edited_message`
+    const msg = body.message || body.edited_message;
+
+    // Create a normalized payload
+    let payload = { raw: body };
+    if (msg) {
+        payload = {
+            ...payload,
+            chat_id: msg.chat?.id,
+            text: msg.text || '',
+            username: msg.from?.username || msg.from?.first_name || 'User',
+            date: msg.date
+        };
+    }
+
+    console.log(`[Telegram] Update recibido para ID: ${id} del chat ${payload.chat_id || 'unknown'}`);
+
+    if (isTestModeActive && activeTestWebhookId === id) {
+        console.log(`[Telegram] Modo Test Activo. Emitiendo a Frontend...`);
+        io.emit('webhook_received', { webhookId: id, payload });
+        return res.status(200).json({ status: 'ok', mode: 'test', emit: true });
+    }
+
+    try {
+        const fileContent = fs.readFileSync(FLOW_FILE, 'utf8');
+        const flows = JSON.parse(fileContent);
+
+        let targetFlow = null;
+        for (const flow of flows) {
+            const hasHook = flow.nodes?.find(n => n.type === 'telegramTriggerNode' && n.id === id);
+            if (hasHook) {
+                targetFlow = flow;
+                break;
+            }
+        }
+
+        if (!targetFlow) {
+            console.warn(`[Telegram] No se encontro flujo activo para Trigger ID: ${id}`);
+            return res.status(404).json({ error: 'Webhook Endpoint Not Found or Inactive.' });
+        }
+
+        console.log(`[Telegram] Iniciando Background Engine para Flujo: ${targetFlow.name}`);
+
+        executeHeadlessFlow(id, payload, targetFlow.nodes, targetFlow.edges)
+            .then(result => console.log(`[Telegram] Ejecucion Background Finalizada OK.`))
+            .catch(err => console.error(`[Telegram] Fallo en Ejecucion Background:`, err));
+
+        return res.status(200).send('OK');
+
+    } catch (err) {
+        console.error('[Telegram] Error leyendo flujos localmente:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
     console.log(`🚀 Le Flux Backend Master corriendo en puerto ${PORT}`);

@@ -22,7 +22,7 @@ export const socket = io(import.meta.env.PROD ? '/' : 'http://localhost:3000');
 
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { PixtralNode, DefaultNode, TestNode, WebhookNode, HttpNode, MapperNode, ResponseNode, CodestralNode, DocumentAINode, AudioNode, BatchNode, ContextNode, MistralNode, HuggingFaceNode, ElevenLabsNode } from './components/nodes/CustomNodes';
+import { PixtralNode, DefaultNode, TestNode, WebhookNode, HttpNode, MapperNode, ResponseNode, CodestralNode, DocumentAINode, AudioNode, BatchNode, ContextNode, MistralNode, HuggingFaceNode, ElevenLabsNode, TelegramTriggerNode, TelegramMessageNode } from './components/nodes/CustomNodes';
 import { SettingsPanel, LogsPanel } from './components/Panels';
 import { CredentialsModal } from './components/CredentialsModal';
 import type { ExecutionData } from './components/ExecutionsSidebar';
@@ -44,6 +44,8 @@ const nodeTypes = {
   mistralNode: MistralNode,
   huggingFaceNode: HuggingFaceNode,
   elevenLabsNode: ElevenLabsNode,
+  telegramTriggerNode: TelegramTriggerNode,
+  telegramMessageNode: TelegramMessageNode,
   default: DefaultNode,
 };
 
@@ -57,6 +59,7 @@ const MiniMapCustomNode = ({ x, y, width, height, color, id }: MiniMapNodeProps)
   const isDocument = id.includes('document');
   const isHuggingFace = id.includes('huggingFace');
   const isElevenLabs = id.includes('elevenLabs');
+  const isTelegram = id.includes('telegram');
 
   const ICON_SIZE = 16;
   const cx = width / 2;
@@ -72,6 +75,7 @@ const MiniMapCustomNode = ({ x, y, width, height, color, id }: MiniMapNodeProps)
     if (isMapper) return <Activity size={ICON_SIZE} className="text-[#0B101E]" />;
     if (isHuggingFace) return <span className="text-[12px] flex items-center justify-center leading-none mt-0.5 ml-0.5">🤗</span>;
     if (isElevenLabs) return <span className="text-[12px] flex items-center justify-center leading-none mt-0.5 ml-0.5">🎙️</span>;
+    if (isTelegram) return <span className="text-[12px] flex items-center justify-center leading-none mt-0.5 ml-0.5 text-blue-400">✈️</span>;
     return <PixelMistralLogo size={ICON_SIZE} className="text-[#0B101E]" />;
   };
 
@@ -108,7 +112,7 @@ export default function App() {
 
   const [credentials, setCredentials] = useState(() => {
     const saved = localStorage.getItem('leflux_credentials');
-    return saved ? JSON.parse(saved) : { mistralKey: '', huggingFaceKey: '', elevenLabsKey: '' };
+    return saved ? JSON.parse(saved) : { mistralKey: '', huggingFaceKey: '', elevenLabsKey: '', telegramToken: '' };
   });
   const [isCredentialsOpen, setIsCredentialsOpen] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
@@ -507,6 +511,53 @@ export default function App() {
         setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
+      } else if (node.type === 'telegramMessageNode') {
+        if (!credentials.telegramToken) throw new Error("Falta Telegram Bot Token en Credenciales.");
+
+        const replaceVariables = (text: string) => {
+          if (!text) return '';
+          return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
+            const parts = path.split('.');
+            const currentPathId = parts[0];
+            const aliasNode = nodes.find(n => n.type === currentPathId || String(n.data?.label || '').replace(/[^a-zA-Z0-9_.-]/g, "") === currentPathId);
+            if (aliasNode && flowContext[aliasNode.id]) {
+              parts[0] = aliasNode.id;
+            }
+
+            let current: any = flowContext;
+            for (const p of parts) {
+              if (current && typeof current === 'object' && p in current) {
+                current = current[current.hasOwnProperty(p) ? p : p];
+              } else {
+                return 'null';
+              }
+            }
+            return typeof current === 'object' ? JSON.stringify(current) : String(current);
+          });
+        };
+
+        const chatId = replaceVariables(String(node.data?.chatId || ''));
+        const textMessage = replaceVariables(String(node.data?.message || 'Prueba desde Mistral Flow Studio'));
+
+        if (!chatId) throw new Error('Chat ID inválido o vacío para Telegram.');
+
+        const res = await fetch(`https://api.telegram.org/bot${credentials.telegramToken}/sendMessage`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ chat_id: chatId, text: textMessage })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.description || res.statusText);
+        }
+
+        const output = `Mensaje de prueba enviado a ${chatId} exitosamente.`;
+        setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+        setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+
       } else if (node.type === 'mapperNode') {
         const previewObj: Record<string, any> = {};
         const mappings = node.data?.mappings;
@@ -894,6 +945,72 @@ export default function App() {
         } catch (error: any) {
           setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo ElevenLabs: ${error.message}`, hasError: true } } : n));
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error ElevenLabs: ${error.message}`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+      } else if (node.type === 'telegramMessageNode') {
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Enviando mensaje Telegram...`, type: 'warning' }]);
+
+        if (!credentials.telegramToken) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta Telegram Bot Token en Credenciales`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+        const replaceVariables = (text: string) => {
+          if (!text) return '';
+          return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
+            const parts = path.split('.');
+            const currentPathId = parts[0];
+            const aliasNode = nodes.find(n => n.type === currentPathId || String(n.data?.label || '').replace(/[^a-zA-Z0-9_.-]/g, "") === currentPathId);
+            if (aliasNode && flowContext[aliasNode.id]) {
+              parts[0] = aliasNode.id;
+            }
+
+            let current: any = flowContext;
+            for (const p of parts) {
+              if (current && typeof current === 'object' && p in current) {
+                current = current[current.hasOwnProperty(p) ? p : p];
+              } else {
+                return 'null';
+              }
+            }
+            return typeof current === 'object' ? JSON.stringify(current) : String(current);
+          });
+        };
+
+        const chatId = replaceVariables(String(node.data?.chatId || ''));
+        const textMessage = replaceVariables(String(node.data?.message || ''));
+
+        if (!chatId) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Chat ID inválido o vacío para Telegram`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+        try {
+          const res = await fetch(`https://api.telegram.org/bot${credentials.telegramToken}/sendMessage`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ chat_id: chatId, text: textMessage })
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.description || res.statusText);
+          }
+
+          const output = `Mensaje enviado a ${chatId} exitosamente.`;
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+          setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+          flowContext[node.id] = { data: output };
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Telegram exito.`, type: 'success' }]);
+        } catch (error: any) {
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Telegram: ${error.message}`, hasError: true } } : n));
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error Telegram: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
         }
