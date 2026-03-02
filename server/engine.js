@@ -56,8 +56,29 @@ export const executeHeadlessFlow = async (webhookId, initialPayload, nodes, edge
     }
 
     // Inyectar payload
-    flowContext[webhookNode.id] = initialPayload;
+    flowContext[webhookNode.id] = { data: initialPayload }; // Wrapped in data for UI parity
     console.log(`[Engine] Webhook Payload inyectado en ${webhookNode.id}`);
+
+    // Crear alias para todos los nodos en el flowContext (p. ej. "webhookNode" o "mi_nodo")
+    nodes.forEach(n => {
+        // Alias de Tipo (Ej: payload accesible via {{ webhookNode.data.files }})
+        if (n.type && !flowContext[n.type]) {
+            flowContext[n.type] = flowContext[n.id] || { data: n.data };
+            // Vincular de modo pasivo
+            Object.defineProperty(flowContext, n.type, {
+                get: () => flowContext[n.id]
+            });
+        }
+        // Alias de Label
+        if (n.data?.label) {
+            const cleanLabel = String(n.data.label).replace(/[^a-zA-Z0-9_.-]/g, "");
+            if (cleanLabel && !flowContext[cleanLabel]) {
+                Object.defineProperty(flowContext, cleanLabel, {
+                    get: () => flowContext[n.id]
+                });
+            }
+        }
+    });
 
     // 2. Sorting Topologico Recursivo
     const executeNode = async (nodeId) => {

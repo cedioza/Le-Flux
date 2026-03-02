@@ -351,6 +351,12 @@ export default function App() {
       if (!text) return '';
       return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
         const parts = path.split('.');
+        const currentPathId = parts[0];
+        const aliasNode = nodes.find(n => n.type === currentPathId || String(n.data?.label || '').replace(/[^a-zA-Z0-9_.-]/g, "") === currentPathId);
+        if (aliasNode && flowContext[aliasNode.id]) {
+          parts[0] = aliasNode.id;
+        }
+
         let current: any = flowContext;
         for (const p of parts) {
           if (current && typeof current === 'object' && p in current) {
@@ -722,6 +728,12 @@ export default function App() {
           if (!text) return '';
           return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
             const parts = path.split('.');
+            const currentPathId = parts[0];
+            const aliasNode = nodes.find(n => n.type === currentPathId || String(n.data?.label || '').replace(/[^a-zA-Z0-9_.-]/g, "") === currentPathId);
+            if (aliasNode && flowContext[aliasNode.id]) {
+              parts[0] = aliasNode.id;
+            }
+
             let current: any = flowContext;
             for (const p of parts) {
               if (current && typeof current === 'object' && p in current) {
