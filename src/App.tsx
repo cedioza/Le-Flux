@@ -420,8 +420,8 @@ export default function App() {
         const prompt = replaceVariables(String(node.data?.prompt || 'What is in this image?'));
         const imageSource = replaceVariables(String(node.data?.imageSource || ''));
 
-        if (!imageSource || !imageSource.startsWith('data:image')) {
-          throw new Error('Invalid or missing image source. Must be a base64 Data URI.');
+        if (!imageSource || (!imageSource.startsWith('data:image') && !imageSource.startsWith('http'))) {
+          throw new Error('Invalid or missing image source. Must be a base64 Data URI or HTTP URL.');
         }
 
         const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -737,8 +737,8 @@ export default function App() {
         const prompt = replaceVariables(String(node.data?.prompt || 'What is in this image?'));
         const imageSource = replaceVariables(String(node.data?.imageSource || ''));
 
-        if (!imageSource || !imageSource.startsWith('data:image')) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Fuente de imagen inválida o ausente. (Data URI Base64 requerido)`, type: 'error' }]);
+        if (!imageSource || (!imageSource.startsWith('data:image') && !imageSource.startsWith('http'))) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Fuente de imagen inválida o ausente. (Data URI o HTTP URL requerido)`, type: 'error' }]);
           hasError = true;
           break;
         }

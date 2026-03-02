@@ -5,6 +5,8 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { executeHeadlessFlow } from './engine.js';
 
@@ -13,6 +15,14 @@ const __dirname = path.dirname(__filename);
 const DATA_FILE = path.join(__dirname, 'data', 'flows.json');
 const EXECUTIONS_FILE = path.join(__dirname, 'data', 'executions.json');
 const SETTINGS_FILE = path.join(__dirname, 'data', 'settings.json');
+
+dotenv.config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -89,15 +99,37 @@ app.post('/api/webhook/:id', upload.any(), async (req, res) => {
     const { id } = req.params;
     let payload = req.body || {};
 
-    // Inyectar Archivos parseados como Base64 DataURIs en el Payload para compatibilidad
+    // Subir Archivos a Cloudinary de forma asíncrona
     if (req.files && req.files.length > 0) {
         if (!payload.files) payload.files = {};
-        req.files.forEach(file => {
-            const base64Str = file.buffer.toString('base64');
-            const dataUri = `data:${file.mimetype};base64,${base64Str}`;
-            payload.files[file.fieldname] = dataUri;
+
+        const uploadPromises = req.files.map(file => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'auto' },
+                    (error, result) => {
+                        if (error) {
+                            console.error('[Cloudinary] Error subiendo archivo:', error);
+                            // Fallback to base64 if cloudinary fails setup
+                            const base64Str = file.buffer.toString('base64');
+                            const dataUri = `data:${file.mimetype};base64,${base64Str}`;
+                            resolve({ fieldname: file.fieldname, url: dataUri });
+                        } else {
+                            console.log(`[Webhook] Subido a Cloudinary: ${result.secure_url}`);
+                            resolve({ fieldname: file.fieldname, url: result.secure_url });
+                        }
+                    }
+                );
+                stream.end(file.buffer);
+            });
         });
-        console.log(`[Webhook] Form-data procesado. ${req.files.length} archivo(s) parseados a Base64.`);
+
+        const uploadedFiles = await Promise.all(uploadPromises);
+        uploadedFiles.forEach(f => {
+            payload.files[f.fieldname] = f.url;
+        });
+
+        console.log(`[Webhook] Form-data procesado. ${req.files.length} archivo(s) subidos a Cloudinary.`);
     }
 
     console.log(`[Webhook] Peticion entrante para ID: ${id}`);

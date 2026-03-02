@@ -278,8 +278,8 @@ export const executeHeadlessFlow = async (webhookId, initialPayload, nodes, edge
                 const prompt = evaluateTemplate(node.data?.prompt || 'What is in this image?', flowContext);
                 const imageSource = evaluateTemplate(node.data?.imageSource || '', flowContext);
 
-                if (!imageSource || !imageSource.startsWith('data:image')) {
-                    flowContext[nodeId] = { error: 'Invalid or missing image source. Must be a base64 Data URI.' };
+                if (!imageSource || (!imageSource.startsWith('data:image') && !imageSource.startsWith('http'))) {
+                    flowContext[nodeId] = { error: 'Invalid or missing image source. Must be a base64 Data URI or HTTP URL.' };
                     hasError = true;
                     break;
                 }
