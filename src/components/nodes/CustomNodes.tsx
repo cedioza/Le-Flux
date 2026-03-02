@@ -270,3 +270,38 @@ export const MistralNode = ({ data, selected }: { data: any, selected: boolean }
         </div>
     );
 };
+
+export const HuggingFaceNode = ({ data, selected }: { data: any, selected: boolean }) => {
+    return (
+        <div className={`w-[240px] bg-mistral-panel rounded-lg shadow-xl overflow-hidden border ${selected ? 'border-yellow-400 ring-2 ring-yellow-400/30' : 'border-mistral-border'} ${data.isExecuting ? 'ring-4 ring-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.6)]' : ''} transition-all duration-300`}>
+            <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-yellow-400 !border-mistral-bg" />
+            <div className="bg-[#1a2234] px-3 py-2 flex items-center gap-2 border-b border-mistral-border">
+                <span className="text-xl leading-none">🤗</span>
+                <span className="text-white font-bold text-sm">HuggingFace</span>
+            </div>
+            <div className="p-3 space-y-2">
+                <div className="text-[10px] text-mistral-muted">Model: <span className="text-white font-mono break-all">{data.model || 'meta-llama/Meta-Llama-3-8B-Instruct'}</span></div>
+            </div>
+            <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-yellow-400 !border-mistral-bg" />
+        </div>
+    );
+};
+
+export const ElevenLabsNode = ({ data, selected }: { data: any, selected: boolean }) => {
+    return (
+        <div className={`w-[240px] bg-mistral-panel rounded-lg shadow-xl overflow-hidden border ${selected ? 'border-indigo-400 ring-2 ring-indigo-400/30' : 'border-mistral-border'} ${data.isExecuting ? 'ring-4 ring-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.6)]' : ''} transition-all duration-300`}>
+            <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-indigo-400 !border-mistral-bg" />
+            <div className="bg-[#1a2234] px-3 py-2 flex items-center gap-2 border-b border-mistral-border">
+                <span className="text-xl leading-none">🎙️</span>
+                <span className="text-white font-bold text-sm">ElevenLabs TTS</span>
+            </div>
+            <div className="p-3 space-y-2">
+                <div className="text-[10px] text-mistral-muted">Voice: <span className="text-white font-mono">{data.voiceId || 'JBFqnCBcs611...'}</span></div>
+                <div className="bg-[#0b101e] border border-gray-700/50 p-2 rounded text-[9px] text-gray-400 line-clamp-2">
+                    {data.text || 'Texto a convertir...'}
+                </div>
+            </div>
+            <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-indigo-400 !border-mistral-bg" />
+        </div>
+    );
+};

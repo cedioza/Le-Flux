@@ -1,0 +1,92 @@
+{
+  "nodes": [
+    {
+      "id": "node_1772399872256",
+      "type": "webhookNode",
+      "position": {
+        "x": -146.8572764392407,
+        "y": -60.16585821119459
+      },
+      "data": {
+        "label": "New webhook",
+        "responsePreview": {
+          "mensaje": "hola buenas que venden"
+        },
+        "hasError": false,
+        "isExecuting": false
+      },
+      "measured": {
+        "width": 220,
+        "height": 96
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "node_1772407311369",
+      "type": "responseNode",
+      "position": {
+        "x": 456.1516924557232,
+        "y": -30.632834802904355
+      },
+      "data": {
+        "label": "",
+        "hasError": false,
+        "responseMode": "all",
+        "responseBody": "{\"key\":\"hola mundo\"}",
+        "responsePreview": {
+          "node_1772399872256": {
+            "mensaje": "hola buenas que venden"
+          },
+          "node_1772407608671": {
+            "error": "Missing API Key in environment"
+          }
+        }
+      },
+      "measured": {
+        "width": 200,
+        "height": 86
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "node_1772407608671",
+      "type": "mistralNode",
+      "position": {
+        "x": 129.64737710844298,
+        "y": -82.97992224918673
+      },
+      "data": {
+        "label": "New mistral",
+        "model": "mistral-small-latest",
+        "systemPrompt": "eres un asistente enfocado en la atención de una veterinaria  llevaras toda la información del cliente ",
+        "userMessage": "{{ node_1772399872256.data.mensaje }}",
+        "responsePreview": "Error: Missing API Key in environment",
+        "hasError": true
+      },
+      "measured": {
+        "width": 240,
+        "height": 132
+      },
+      "selected": true,
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "node_1772399872256",
+      "target": "node_1772407608671",
+      "animated": true,
+      "type": "deletableEdge",
+      "id": "xy-edge__node_1772399872256-node_1772407608671"
+    },
+    {
+      "source": "node_1772407608671",
+      "target": "node_1772407311369",
+      "animated": true,
+      "type": "deletableEdge",
+      "id": "xy-edge__node_1772407608671-node_1772407311369"
+    }
+  ]
+}

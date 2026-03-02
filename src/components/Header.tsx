@@ -1,4 +1,4 @@
-import { Play, Square, Link as LinkIcon, Menu, Save, Plus, ChevronDown } from 'lucide-react';
+import { Play, Square, Link as LinkIcon, Menu, Save, Plus, ChevronDown, Lock } from 'lucide-react';
 import { PixelMistralLogo } from './icons/PixelIcons';
 
 interface HeaderProps {
@@ -7,16 +7,17 @@ interface HeaderProps {
     onSelectFlow: (id: string) => void;
     onNewFlow: () => void;
     onSaveFlow: () => void;
-    apiKey: string;
-    onApiKeyChange: (key: string) => void;
     onPlay: () => void;
     onStop: () => void;
     isExecuting: boolean;
+    viewMode: 'editor' | 'executions';
+    onChangeViewMode: (mode: 'editor' | 'executions') => void;
+    onOpenCredentials?: () => void;
 }
 
-export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFlow, apiKey, onApiKeyChange, onPlay, onStop, isExecuting }: HeaderProps) => {
+export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFlow, onPlay, onStop, isExecuting, viewMode, onChangeViewMode, onOpenCredentials }: HeaderProps) => {
     return (
-        <header className="h-16 bg-mistral-bg border-b border-mistral-border flex items-center justify-between px-6 shrink-0 z-50">
+        <header className="relative h-16 bg-mistral-bg border-b border-mistral-border flex items-center justify-between px-6 shrink-0 z-50">
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
                     {/* Official Mistral Logo */}
@@ -55,49 +56,65 @@ export const Header = ({ flows, currentFlowId, onSelectFlow, onNewFlow, onSaveFl
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <div className="relative">
-                    <input
-                        type="password"
-                        placeholder="Mistral API Key..."
-                        value={apiKey}
-                        onChange={(e) => onApiKeyChange(e.target.value)}
-                        className="bg-mistral-panel border border-mistral-border rounded-md px-3 py-1.5 text-sm text-white focus:outline-none focus:border-mistral-orange w-48 transition-colors"
-                    />
-                    {!apiKey && <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-red-500 animate-pulse" title="API Key Required" />}
-                    {apiKey && <div className="absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-green-500" title="API Key Set" />}
+            <div className="flex-1 flex justify-center absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+                <div className="flex items-center bg-[#1a2234] border border-mistral-border rounded text-sm p-1">
+                    <button
+                        onClick={() => onChangeViewMode('editor')}
+                        className={`px-4 py-1.5 rounded transition-colors ${viewMode === 'editor' ? 'bg-[#2d3748] text-mistral-orange font-medium' : 'text-mistral-muted hover:text-white'}`}
+                    >
+                        Editor
+                    </button>
+                    <button
+                        onClick={() => onChangeViewMode('executions')}
+                        className={`px-4 py-1.5 rounded transition-colors ${viewMode === 'executions' ? 'bg-[#2d3748] text-mistral-orange font-medium' : 'text-mistral-muted hover:text-white'}`}
+                    >
+                        Executions
+                    </button>
                 </div>
+            </div>
 
-                <button onClick={onSaveFlow} className="flex items-center gap-2 bg-[#1a2234] hover:bg-[#2d3748] border border-mistral-border text-mistral-muted hover:text-white transition-colors px-4 py-1.5 rounded-md text-sm">
-                    <Save className="w-4 h-4" />
-                    Guardar
-                </button>
-
-                <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-mistral-panel text-mistral-muted hover:text-white transition-colors">
-                    <LinkIcon className="w-4 h-4" />
-                </button>
-
-                {isExecuting ? (
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={onStop}
-                        className="font-semibold px-6 py-2 rounded-md flex items-center gap-2 transition-transform shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-500 hover:bg-red-400 text-white active:scale-95"
+                        onClick={onOpenCredentials}
+                        className="flex items-center gap-2 text-sm font-medium text-white transition-colors bg-[#1a2234] hover:bg-[#2d3748] border border-mistral-border px-4 py-1.5 rounded-md shadow-sm"
+                        title="Gestionar Credenciales"
                     >
-                        <Square className="w-4 h-4 fill-current" />
-                        Detener
+                        <Lock className="w-4 h-4 text-mistral-orange" />
+                        Credentials
                     </button>
-                ) : (
-                    <button
-                        onClick={onPlay}
-                        className="font-semibold px-6 py-2 rounded-md flex items-center gap-2 transition-transform shadow-[0_0_15px_rgba(252,211,77,0.3)] bg-mistral-orange hover:bg-mistral-hover text-black active:scale-95"
-                    >
-                        <Play className="w-4 h-4 fill-current" />
-                        Play
-                    </button>
-                )}
 
-                <button className="md:hidden text-mistral-muted ml-2">
-                    <Menu className="w-6 h-6" />
-                </button>
+                    <button onClick={onSaveFlow} className="flex items-center gap-2 bg-[#1a2234] hover:bg-[#2d3748] border border-mistral-border text-mistral-muted hover:text-white transition-colors px-4 py-1.5 rounded-md text-sm">
+                        <Save className="w-4 h-4" />
+                        Guardar
+                    </button>
+
+                    <button className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-mistral-panel text-mistral-muted hover:text-white transition-colors">
+                        <LinkIcon className="w-4 h-4" />
+                    </button>
+
+                    {isExecuting ? (
+                        <button
+                            onClick={onStop}
+                            className="font-semibold px-6 py-2 rounded-md flex items-center gap-2 transition-transform shadow-[0_0_15px_rgba(239,68,68,0.3)] bg-red-500 hover:bg-red-400 text-white active:scale-95"
+                        >
+                            <Square className="w-4 h-4 fill-current" />
+                            Detener
+                        </button>
+                    ) : (
+                        <button
+                            onClick={onPlay}
+                            className="font-semibold px-6 py-2 rounded-md flex items-center gap-2 transition-transform shadow-[0_0_15px_rgba(252,211,77,0.3)] bg-mistral-orange hover:bg-mistral-hover text-black active:scale-95"
+                        >
+                            <Play className="w-4 h-4 fill-current" />
+                            Play
+                        </button>
+                    )}
+
+                    <button className="md:hidden text-mistral-muted ml-2">
+                        <Menu className="w-6 h-6" />
+                    </button>
+                </div>
             </div>
         </header>
     );

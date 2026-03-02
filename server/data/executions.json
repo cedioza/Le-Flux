@@ -1,0 +1,285 @@
+[
+  {
+    "id": "exec_1772408244871_2rzm0",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:37:24.871Z",
+    "success": true,
+    "latency": 2708,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "hola buenas que venden"
+      },
+      "node_1772407608671": {
+        "id": "87e79b8d8d7740bfbda6ce8ec2ab5e2c",
+        "created": 1772408242,
+        "model": "mistral-small-latest",
+        "usage": {
+          "prompt_tokens": 33,
+          "total_tokens": 352,
+          "completion_tokens": 319,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "object": "chat.completion",
+        "choices": [
+          {
+            "index": 0,
+            "finish_reason": "stop",
+            "message": {
+              "role": "assistant",
+              "tool_calls": null,
+              "content": "¡Hola! En nuestra veterinaria ofrecemos una amplia variedad de productos y servicios para el cuidado de tus mascotas. Entre los productos que vendemos, puedes encontrar:\n\n1. **Alimentos para mascotas**: Comida seca y húmeda para perros, gatos, y otras mascotas, incluyendo opciones para mascotas con necesidades especiales (alergias, peso, edad, etc.).\n2. **Accesorios**: Collares, correas, arneses, camas, transportadoras, juguetes y más.\n3. **Productos de higiene**: Champús, cepillos, cortauñas, toallitas húmedas, y otros productos para el cuidado del pelaje y las uñas.\n4. **Medicamentos y suplementos**: Desparasitantes, vitaminas, suplementos dietéticos, y otros productos recomendados por nuestros veterinarios.\n5. **Artículos para el entrenamiento**: Snacks para entrenamiento, spray para marcar territorio, y otros productos útiles para el adiestramiento.\n6. **Productos para el hogar**: Comederos y bebederos automáticos, dispensadores de comida, y otros accesorios para el hogar.\n\nAdemás, ofrecemos una variedad de servicios veterinarios, como consultas generales, vacunación, esterilización, cirugías, radiografías, análisis de laboratorio, y mucho más.\n\nSi tienes alguna necesidad específica o pregunta sobre algún producto o servicio, no dudes en decírmelo. ¡Estoy aquí para ayudarte!"
+            }
+          }
+        ]
+      },
+      "node_1772407311369": {
+        "node_1772399872256": {
+          "mensaje": "hola buenas que venden"
+        },
+        "node_1772407608671": {
+          "id": "87e79b8d8d7740bfbda6ce8ec2ab5e2c",
+          "created": 1772408242,
+          "model": "mistral-small-latest",
+          "usage": {
+            "prompt_tokens": 33,
+            "total_tokens": 352,
+            "completion_tokens": 319,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "object": "chat.completion",
+          "choices": [
+            {
+              "index": 0,
+              "finish_reason": "stop",
+              "message": {
+                "role": "assistant",
+                "tool_calls": null,
+                "content": "¡Hola! En nuestra veterinaria ofrecemos una amplia variedad de productos y servicios para el cuidado de tus mascotas. Entre los productos que vendemos, puedes encontrar:\n\n1. **Alimentos para mascotas**: Comida seca y húmeda para perros, gatos, y otras mascotas, incluyendo opciones para mascotas con necesidades especiales (alergias, peso, edad, etc.).\n2. **Accesorios**: Collares, correas, arneses, camas, transportadoras, juguetes y más.\n3. **Productos de higiene**: Champús, cepillos, cortauñas, toallitas húmedas, y otros productos para el cuidado del pelaje y las uñas.\n4. **Medicamentos y suplementos**: Desparasitantes, vitaminas, suplementos dietéticos, y otros productos recomendados por nuestros veterinarios.\n5. **Artículos para el entrenamiento**: Snacks para entrenamiento, spray para marcar territorio, y otros productos útiles para el adiestramiento.\n6. **Productos para el hogar**: Comederos y bebederos automáticos, dispensadores de comida, y otros accesorios para el hogar.\n\nAdemás, ofrecemos una variedad de servicios veterinarios, como consultas generales, vacunación, esterilización, cirugías, radiografías, análisis de laboratorio, y mucho más.\n\nSi tienes alguna necesidad específica o pregunta sobre algún producto o servicio, no dudes en decírmelo. ¡Estoy aquí para ayudarte!"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "id": "exec_1772408025343_4ydm9",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:33:45.343Z",
+    "success": false,
+    "latency": 3,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "hola buenas que venden"
+      },
+      "node_1772407608671": {
+        "error": "Missing API Key in environment"
+      },
+      "node_1772407311369": {
+        "node_1772399872256": {
+          "mensaje": "hola buenas que venden"
+        },
+        "node_1772407608671": {
+          "error": "Missing API Key in environment"
+        }
+      }
+    }
+  },
+  {
+    "id": "exec_1772408006338_f9nd6",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:33:26.338Z",
+    "success": false,
+    "latency": 3,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "hola buenas que venden"
+      },
+      "node_1772407608671": {
+        "error": "Missing API Key in environment"
+      },
+      "node_1772407311369": {
+        "node_1772399872256": {
+          "mensaje": "hola buenas que venden"
+        },
+        "node_1772407608671": {
+          "error": "Missing API Key in environment"
+        }
+      }
+    }
+  },
+  {
+    "id": "exec_1772407766893_v78hq",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:29:26.893Z",
+    "success": false,
+    "latency": 3,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "hola buenas que venden"
+      },
+      "node_1772407608671": {
+        "error": "Missing API Key in environment"
+      },
+      "node_1772407311369": {
+        "node_1772399872256": {
+          "mensaje": "hola buenas que venden"
+        },
+        "node_1772407608671": {
+          "error": "Missing API Key in environment"
+        }
+      }
+    }
+  },
+  {
+    "id": "exec_1772407753194_3mz25",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:29:13.194Z",
+    "success": false,
+    "latency": 3,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "hola buenas que venden"
+      },
+      "node_1772407608671": {
+        "error": "Missing API Key in environment"
+      },
+      "node_1772407311369": {
+        "node_1772399872256": {
+          "mensaje": "hola buenas que venden"
+        },
+        "node_1772407608671": {
+          "error": "Missing API Key in environment"
+        }
+      }
+    }
+  },
+  {
+    "id": "exec_1772407739133_n2ph7",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:28:59.133Z",
+    "success": false,
+    "latency": 3,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "hola buenas que venden"
+      },
+      "node_1772407608671": {
+        "error": "Missing API Key in environment"
+      },
+      "node_1772407311369": {
+        "key": "hola mundo"
+      }
+    }
+  },
+  {
+    "id": "exec_1772407591564_6t9nj",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:26:31.564Z",
+    "success": true,
+    "latency": 4,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "Hola Hackathon Mistral!"
+      },
+      "node_1772407311369": {
+        "key": "hola mundo"
+      }
+    }
+  },
+  {
+    "id": "exec_1772407368490_328wo",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:22:48.490Z",
+    "success": true,
+    "latency": 2,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "Hola Hackathon Mistral!"
+      },
+      "node_1772407311369": {
+        "node_1772399872256": {
+          "mensaje": "Hola Hackathon Mistral!"
+        }
+      }
+    }
+  },
+  {
+    "id": "exec_1772407299341_cqf0z",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T23:21:39.341Z",
+    "success": true,
+    "latency": 1,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "Hola Hackathon Mistral!"
+      }
+    }
+  },
+  {
+    "id": "exec_1772401829516_lqlv7",
+    "webhookId": "node_1772399872256",
+    "timestamp": "2026-03-01T21:50:29.516Z",
+    "success": true,
+    "latency": 0,
+    "nodesContext": {
+      "node_1772399872256": {
+        "mensaje": "Hola Hackathon Mistral!"
+      }
+    }
+  },
+  {
+    "id": "exec_err_1772401812185",
+    "webhookId": "node_1772400723592",
+    "timestamp": "2026-03-01T21:50:12.185Z",
+    "success": false,
+    "latency": 0,
+    "nodesContext": {
+      "error": "No se encontro el Webhook Node para el ID node_1772400723592"
+    }
+  },
+  {
+    "id": "exec_err_1772400794187",
+    "webhookId": "node_1772400723592",
+    "timestamp": "2026-03-01T21:33:14.187Z",
+    "success": false,
+    "latency": 0,
+    "nodesContext": {
+      "error": "No se encontro el Webhook Node para el ID node_1772400723592"
+    }
+  },
+  {
+    "id": "exec_err_1772400769268",
+    "webhookId": "node_1772400723592",
+    "timestamp": "2026-03-01T21:32:49.268Z",
+    "success": false,
+    "latency": 0,
+    "nodesContext": {
+      "error": "No se encontro el Webhook Node para el ID node_1772400723592"
+    }
+  },
+  {
+    "id": "exec_err_1772400743758",
+    "webhookId": "node_1772400723592",
+    "timestamp": "2026-03-01T21:32:23.758Z",
+    "success": false,
+    "latency": 0,
+    "nodesContext": {
+      "error": "No se encontro el Webhook Node para el ID node_1772400723592"
+    }
+  },
+  {
+    "id": "exec_err_1772400736626",
+    "webhookId": "testnode1",
+    "timestamp": "2026-03-01T21:32:16.626Z",
+    "success": false,
+    "latency": 0,
+    "nodesContext": {
+      "error": "No se encontro el Webhook Node para el ID testnode1"
+    }
+  }
+]

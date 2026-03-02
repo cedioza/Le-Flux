@@ -1,7 +1,8 @@
 import { X, Settings, Terminal, FileText, CheckCircle2, Copy } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import { socket } from '../App';
 
-const DraggablePanel = ({ title, icon: Icon, children, defaultPosition, colorClass = "text-mistral-orange" }: any) => {
+const DraggablePanel = ({ title, icon: Icon, children, defaultPosition, colorClass = "text-mistral-orange", onDoubleClickHeader }: any) => {
     const [position, setPosition] = useState(defaultPosition);
     const [isDragging, setIsDragging] = useState(false);
     const dragRef = useRef<{ x: number, y: number } | null>(null);
@@ -35,19 +36,23 @@ const DraggablePanel = ({ title, icon: Icon, children, defaultPosition, colorCla
             <div
                 className="p-2 border-b-4 border-mistral-border bg-[#171717] flex items-center justify-between cursor-move select-none active:cursor-grabbing"
                 onMouseDown={(e) => { setIsDragging(true); dragRef.current = { x: e.clientX - position.x, y: e.clientY - position.y }; }}
+                onDoubleClick={onDoubleClickHeader}
+                title="Arrastrar panel (Click) / Ocultar cont. (Doble Click en el título)"
             >
-                <div className={`flex items-center gap-2 ${colorClass} text-[10px] font-bold uppercase tracking-widest`}>
+                <div className={`flex items-center gap-2 ${colorClass} text-[10px] font-bold uppercase tracking-widest pointer-events-none`}>
                     {Icon && <Icon className="w-4 h-4" />} {title}
                 </div>
-                <div className="flex gap-1 opacity-50">
+                <div className="flex gap-1 opacity-50 pointer-events-none">
                     <div className="w-2 h-2 rounded-full bg-mistral-border"></div>
                     <div className="w-2 h-2 rounded-full bg-mistral-border"></div>
                     <div className="w-2 h-2 rounded-full bg-mistral-border"></div>
                 </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-2 bg-[#0A0A0A]">
-                {children}
-            </div>
+            {children && (
+                <div className="flex-1 overflow-y-auto p-2 bg-[#0A0A0A]">
+                    {children}
+                </div>
+            )}
         </div>
     );
 };
@@ -57,6 +62,46 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
 
     const isPixtral = selectedNode.type === 'pixtralNode';
     const [copiedPath, setCopiedPath] = useState<string | null>(null);
+    const [isListening, setIsListening] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(120);
+
+    const [isInputCollapsed, setIsInputCollapsed] = useState(false);
+    const [isOutputCollapsed, setIsOutputCollapsed] = useState(false);
+
+    useEffect(() => {
+        if (!isListening) return;
+        const interval = setInterval(() => {
+            setTimeLeft((t) => {
+                if (t <= 1) {
+                    setIsListening(false);
+                    return 120;
+                }
+                return t - 1;
+            });
+        }, 1000);
+
+        socket.on('webhook_received', () => {
+            setIsListening(false);
+            setTimeLeft(120);
+        });
+
+        socket.on('test_timeout', () => {
+            setIsListening(false);
+            setTimeLeft(120);
+        });
+
+        return () => {
+            clearInterval(interval);
+            socket.off('webhook_received');
+            socket.off('test_timeout');
+        };
+    }, [isListening]);
+
+    const handleTestWebhook = () => {
+        setIsListening(true);
+        setTimeLeft(120);
+        socket.emit('test_webhook', { webhookId: selectedNode.id });
+    };
 
     const renderJsonTree = (obj: any, parentPath: string, nodeId: string) => {
         if (!obj || typeof obj !== 'object') return null;
@@ -144,32 +189,50 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
 
     return (
         <>
-            <DraggablePanel title="INPUT DATA" icon={FileText} defaultPosition={{ x: 300, y: 80 }} colorClass="text-mistral-orange">
-                <div className="space-y-2">
-                    {upstreamNodes && upstreamNodes.length > 0 ? (
-                        upstreamNodes.map((unode) => (
-                            <UpstreamDataViewer key={`${unode.id}-${unode.data?.responsePreview ? 'loaded' : 'null'}`} unode={unode} />
-                        ))
-                    ) : (
-                        <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4">Sin datos de entrada</div>
+            <DraggablePanel
+                title="INPUT DATA"
+                icon={FileText}
+                defaultPosition={{ x: 300, y: 80 }}
+                colorClass="text-mistral-orange"
+                onDoubleClickHeader={() => setIsInputCollapsed(!isInputCollapsed)}
+            >
+                <div className="space-y-2 select-none">
+                    {!isInputCollapsed && (
+                        upstreamNodes && upstreamNodes.length > 0 ? (
+                            upstreamNodes.map((unode) => (
+                                <UpstreamDataViewer key={`${unode.id}-${unode.data?.responsePreview ? 'loaded' : 'null'}`} unode={unode} />
+                            ))
+                        ) : (
+                            <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4 cursor-default">Sin datos de entrada</div>
+                        )
                     )}
                 </div>
             </DraggablePanel>
 
-            <DraggablePanel title="PREVIEW RESPUESTA" icon={Terminal} defaultPosition={{ x: 300, y: 460 }} colorClass="text-green-400">
-                {selectedNode.data?.responsePreview ? (
-                    <div className="bg-[#171717] border-2 border-green-900/50 p-2 overflow-x-auto">
-                        <pre className="text-[10px] text-mistral-muted font-mono whitespace-pre-wrap break-words">
-                            {typeof selectedNode.data.responsePreview === 'object'
-                                ? JSON.stringify(selectedNode.data.responsePreview, null, 2)
-                                : String(selectedNode.data.responsePreview)}
-                        </pre>
-                    </div>
-                ) : (
-                    <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4">
-                        Ejecuta o Testea el nodo para ver su respuesta.
-                    </div>
-                )}
+            <DraggablePanel
+                title="PREVIEW RESPUESTA"
+                icon={Terminal}
+                defaultPosition={{ x: 300, y: 460 }}
+                colorClass="text-green-400"
+                onDoubleClickHeader={() => setIsOutputCollapsed(!isOutputCollapsed)}
+            >
+                <div className="select-none min-h-[30px]">
+                    {!isOutputCollapsed && (
+                        selectedNode.data?.responsePreview ? (
+                            <div className="bg-[#171717] border-2 border-green-900/50 p-2 overflow-x-auto cursor-text">
+                                <pre className="text-[10px] text-mistral-muted font-mono whitespace-pre-wrap break-words">
+                                    {typeof selectedNode.data.responsePreview === 'object'
+                                        ? JSON.stringify(selectedNode.data.responsePreview, null, 2)
+                                        : String(selectedNode.data.responsePreview)}
+                                </pre>
+                            </div>
+                        ) : (
+                            <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4">
+                                Ejecuta o Testea el nodo para ver su respuesta.
+                            </div>
+                        )
+                    )}
+                </div>
             </DraggablePanel>
 
             <aside className="w-[320px] bg-[#1a2234] border-l border-mistral-border h-full flex flex-col backdrop-blur-md bg-opacity-90 shrink-0 z-10 shadow-2xl">
@@ -391,20 +454,42 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
 
                     {selectedNode.type === 'webhookNode' && (
                         <>
-                            <div className="bg-green-400/10 border border-green-400/30 p-3 rounded text-xs text-green-200 mb-4">
-                                Este webhook está activo y esperando peticiones.
+                            <div className={`border p-3 rounded text-xs mb-4 flex flex-col items-center justify-center transition-colors ${isListening ? 'bg-orange-400/10 border-orange-400/30 text-mistral-orange' : 'bg-mistral-panel border-mistral-border text-mistral-muted'}`}>
+                                {isListening ? (
+                                    <>
+                                        <div className="flex items-center gap-2 font-bold mb-1 animate-pulse">
+                                            <div className="w-2 h-2 bg-mistral-orange rounded-full"></div> ESCUCHANDO PETICIÓN EXTERNA...
+                                        </div>
+                                        <span className="font-mono">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                                    </>
+                                ) : (
+                                    <div className="text-center">
+                                        Modo Testing desactivado. Envía payloads y aparecerán aquí.<br />
+                                        <span className="text-mistral-orange font-bold mt-2 block">⚠️ Recuerda presionar "Guardar" arriba en el Header cada vez que cambies el Webhook u otros nodos, para que el servidor Background lo registre.</span>
+                                    </div>
+                                )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Webhook URL</label>
-                                <div className="flex gap-2">
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Webhook Local URL</label>
+                                <div className="flex gap-2 mb-4">
                                     <input
                                         type="text"
                                         readOnly
                                         className="flex-1 bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-xs text-gray-400 font-mono"
-                                        value={selectedNode.data?.url || 'https://leflux.ai/w/1a2b3c'}
+                                        value={`http://localhost:3000/api/webhook/${selectedNode.id}`}
                                     />
-                                    <button className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors">Copiar</button>
+                                    <button
+                                        onClick={() => navigator.clipboard.writeText(`http://localhost:3000/api/webhook/${selectedNode.id}`)}
+                                        className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors truncate"
+                                    >Copiar</button>
                                 </div>
+                                <button
+                                    onClick={handleTestWebhook}
+                                    disabled={isListening}
+                                    className={`w-full font-bold uppercase tracking-widest text-[10px] py-3 rounded transition-colors ${isListening ? 'bg-mistral-bg text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/50'}`}
+                                >
+                                    {isListening ? 'Detener Test' : '▶ Activar Escucha (2 Mins)'}
+                                </button>
                             </div>
                         </>
                     )}
@@ -464,6 +549,46 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     placeholder="Resume el siguiente texto: {{ mapperNode.data.resumen }}..."
                                     value={selectedNode.data?.userMessage || ''}
                                     onChange={(e) => onUpdateData({ userMessage: e.target.value })}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {selectedNode.type === 'huggingFaceNode' && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Model Selection</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
+                                    value={selectedNode.data?.model || 'meta-llama/Meta-Llama-3-8B-Instruct'}
+                                    onChange={(e) => onUpdateData({ model: e.target.value })}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    {selectedNode.type === 'elevenLabsNode' && (
+                        <>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Voice ID</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
+                                    value={selectedNode.data?.voiceId || 'JBFqnCBcs611NsnJI8XM'}
+                                    onChange={(e) => onUpdateData({ voiceId: e.target.value })}
+                                    placeholder="e.g. 21m00Tcm4TlvDq8ikWAM"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
+                                    Text to Speech
+                                </label>
+                                <textarea
+                                    className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
+                                    placeholder="Enter text or variables {{ mapperNode.data.text }}..."
+                                    value={selectedNode.data?.text || ''}
+                                    onChange={(e) => onUpdateData({ text: e.target.value })}
                                 />
                             </div>
                         </>
@@ -540,6 +665,32 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
 
                     {selectedNode.type === 'responseNode' && (
                         <>
+                            <div className="mb-4">
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Modo de Respuesta</label>
+                                <select
+                                    className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
+                                    value={selectedNode.data?.responseMode || 'all'}
+                                    onChange={(e) => onUpdateData({ responseMode: e.target.value })}
+                                >
+                                    <option value="all">Devolver todo el Contexto (Global)</option>
+                                    <option value="custom">Respuesta Personalizada (JSON)</option>
+                                </select>
+                            </div>
+
+                            {selectedNode.data?.responseMode === 'custom' && (
+                                <div className="mb-4">
+                                    <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
+                                        Cuerpo Pers. (Usa variables)
+                                    </label>
+                                    <textarea
+                                        className="w-full h-32 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono"
+                                        placeholder={'{\n  "status": "ok",\n  "result": "{{ mapperNode_1.data }}"\n}'}
+                                        value={selectedNode.data?.responseBody || ''}
+                                        onChange={(e) => onUpdateData({ responseBody: e.target.value })}
+                                    />
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Descripción Interna</label>
                                 <input

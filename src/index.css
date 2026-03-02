@@ -77,3 +77,19 @@
 ::-webkit-scrollbar-corner {
   background: var(--color-mistral-bg);
 }
+
+/* Fix ReactFlow Controls Visibility */
+.react-flow__controls-button {
+  background-color: var(--color-mistral-bg) !important;
+  border-bottom: 1px solid var(--color-mistral-border) !important;
+  fill: var(--color-mistral-text) !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--color-mistral-panel) !important;
+  fill: var(--color-mistral-orange) !important;
+}
+
+.react-flow__controls-button svg {
+  margin: auto;
+}

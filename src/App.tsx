@@ -10,13 +10,23 @@ import {
   addEdge,
   BackgroundVariant
 } from '@xyflow/react';
-import type { Connection, Edge, Node } from '@xyflow/react';
+import type { Connection, Edge, Node, MiniMapNodeProps } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { io } from 'socket.io-client';
+
+import { PixelMistralLogo, PixelRobot, PixelEye, PixelTerminal, PixelDocument } from './components/icons/PixelIcons';
+import { Layers, Database, Activity, CheckCircle2 } from 'lucide-react'; // Some generic fallbacks
+
+// Conectar con el backend en el mismo host si estamos en prod, o localhost:3000 si en dev
+export const socket = io(import.meta.env.PROD ? '/' : 'http://localhost:3000');
 
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
-import { PixtralNode, DefaultNode, TestNode, WebhookNode, HttpNode, MapperNode, ResponseNode, CodestralNode, DocumentAINode, AudioNode, BatchNode, ContextNode, MistralNode } from './components/nodes/CustomNodes';
+import { PixtralNode, DefaultNode, TestNode, WebhookNode, HttpNode, MapperNode, ResponseNode, CodestralNode, DocumentAINode, AudioNode, BatchNode, ContextNode, MistralNode, HuggingFaceNode, ElevenLabsNode } from './components/nodes/CustomNodes';
 import { SettingsPanel, LogsPanel } from './components/Panels';
+import { CredentialsModal } from './components/CredentialsModal';
+import type { ExecutionData } from './components/ExecutionsSidebar';
+import { ExecutionsSidebar } from './components/ExecutionsSidebar';
 import DeletableEdge from './components/nodes/CustomEdges';
 
 const nodeTypes = {
@@ -32,7 +42,48 @@ const nodeTypes = {
   batchNode: BatchNode,
   contextNode: ContextNode,
   mistralNode: MistralNode,
+  huggingFaceNode: HuggingFaceNode,
+  elevenLabsNode: ElevenLabsNode,
   default: DefaultNode,
+};
+
+// --- Custom MiniMap Node with simple shapes (simulating icons) ---
+const MiniMapCustomNode = ({ x, y, width, height, color, id }: MiniMapNodeProps) => {
+  const isMistral = id.includes('mistral') || id.includes('pixtral') || id.includes('codestral');
+  const isWebhook = id.includes('webhook') || id.includes('test');
+  const isHttp = id.includes('http');
+  const isResponse = id.includes('response');
+  const isMapper = id.includes('mapper');
+  const isDocument = id.includes('document');
+  const isHuggingFace = id.includes('huggingFace');
+  const isElevenLabs = id.includes('elevenLabs');
+
+  const ICON_SIZE = 16;
+  const cx = width / 2;
+  const cy = height / 2;
+
+  // Render a specific icon component based on type
+  const renderIcon = () => {
+    if (isMistral) return <PixelRobot size={ICON_SIZE} className="text-[#0B101E]" />;
+    if (isWebhook) return <PixelEye size={ICON_SIZE} className="text-[#0B101E]" />;
+    if (isHttp) return <PixelTerminal size={ICON_SIZE} className="text-[#0B101E]" />;
+    if (isDocument) return <PixelDocument size={ICON_SIZE} className="text-[#0B101E]" />;
+    if (isResponse) return <CheckCircle2 size={ICON_SIZE} className="text-[#0B101E]" />;
+    if (isMapper) return <Activity size={ICON_SIZE} className="text-[#0B101E]" />;
+    if (isHuggingFace) return <span className="text-[12px] flex items-center justify-center leading-none mt-0.5 ml-0.5">🤗</span>;
+    if (isElevenLabs) return <span className="text-[12px] flex items-center justify-center leading-none mt-0.5 ml-0.5">🎙️</span>;
+    return <PixelMistralLogo size={ICON_SIZE} className="text-[#0B101E]" />;
+  };
+
+  return (
+    <g transform={`translate(${x}, ${y})`}>
+      <rect width={width} height={height} rx={4} fill={color} stroke="#1A2234" strokeWidth={2} />
+      {/* Nested <svg> works perfectly in SVG to act as an embedded container with exact x,y positioning for icons */}
+      <svg x={cx - ICON_SIZE / 2} y={cy - ICON_SIZE / 2} width={ICON_SIZE} height={ICON_SIZE} viewBox={`0 0 ${ICON_SIZE} ${ICON_SIZE}`}>
+        {renderIcon()}
+      </svg>
+    </g>
+  );
 };
 
 const edgeTypes = {
@@ -55,15 +106,26 @@ export default function App() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const { screenToFlowPosition } = useReactFlow();
 
-  const [apiKey, setApiKey] = useState('');
+  const [credentials, setCredentials] = useState(() => {
+    const saved = localStorage.getItem('leflux_credentials');
+    return saved ? JSON.parse(saved) : { mistralKey: '', huggingFaceKey: '', elevenLabsKey: '' };
+  });
+  const [isCredentialsOpen, setIsCredentialsOpen] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const stopExecutionRef = useRef(false);
   const [executionLatency, setExecutionLatency] = useState<number | null>(null);
   const [executionLogs, setExecutionLogs] = useState<{ time: string, message: string, type: 'info' | 'error' | 'success' | 'warning' }[]>([]);
 
+  // Referencia mutable a handlePlay para que el socket la pueda ver
+  const handlePlayRef = useRef<((payload?: any) => Promise<void>) | undefined>(undefined);
+
   // --- Flow Management State ---
   const [flows, setFlows] = useState<{ id: string; name: string; nodes: Node[]; edges: Edge[]; updatedAt: number }[]>([]);
   const [currentFlowId, setCurrentFlowId] = useState<string>('default');
+
+  const [viewMode, setViewMode] = useState<'editor' | 'executions'>('editor');
+  const [executions, setExecutions] = useState<ExecutionData[]>([]);
+  const [activeExecutionId, setActiveExecutionId] = useState<string | null>(null);
 
   // Load flows from localStorage on mount
   useEffect(() => {
@@ -134,7 +196,51 @@ export default function App() {
     });
     setFlows(updatedFlows);
     localStorage.setItem('leflux_flows', JSON.stringify(updatedFlows));
+
+    // Guardar en backend (Producción Headless)
+    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Empujando flow y Settings al backend Headless...', type: 'info' }]);
+    socket.emit('save_flow', { nodes, edges, credentials });
   };
+
+  useEffect(() => {
+    socket.on('save_flow_success', () => {
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flow guardado exitosamente en Headless JSON.', type: 'success' }]);
+    });
+    socket.on('save_flow_error', (err) => {
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error guardando en backend: ${err.message}`, type: 'error' }]);
+    });
+
+    socket.on('webhook_received', ({ webhookId, payload }) => {
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `[MODO TEST] Webhook ID ${webhookId} recibido. Ejecutando flujo automáticamente...`, type: 'warning' }]);
+      if (handlePlayRef.current) {
+        handlePlayRef.current(payload);
+      }
+    });
+
+    socket.on('test_timeout', ({ webhookId }) => {
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `[MODO TEST] Tiempo expirado (2 mins) para el webhook ${webhookId}. Escucha desactivada.`, type: 'info' }]);
+    });
+
+    socket.on('new_execution', (exec: ExecutionData) => {
+      setExecutions(prev => [exec, ...prev]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Nueva Ejecución Background completada (${exec.success ? 'Success' : 'Failed'}).`, type: exec.success ? 'success' : 'error' }]);
+    });
+
+    fetch(import.meta.env.PROD ? '/api/executions' : 'http://localhost:3000/api/executions')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setExecutions(data);
+      })
+      .catch(err => console.error("Error loading executions", err));
+
+    return () => {
+      socket.off('save_flow_success');
+      socket.off('save_flow_error');
+      socket.off('webhook_received');
+      socket.off('test_timeout');
+      socket.off('new_execution');
+    }
+  }, []);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -203,6 +309,36 @@ export default function App() {
     return Array.from(new Map(ancestors.map(item => [item.id, item])).values());
   }, []);
 
+  const handleSelectExecution = (exec: ExecutionData) => {
+    setActiveExecutionId(exec.id);
+
+    // Inject node contexts into responsePreview to view history
+    const updatedNodes = nodes.map(n => {
+      const execContext = exec.nodesContext[n.id];
+      if (execContext !== undefined) {
+        const hasErr = !!execContext?.error;
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            responsePreview: hasErr ? `Error: ${execContext.error}` : execContext,
+            hasError: hasErr
+          }
+        };
+      }
+      return { ...n, data: { ...n.data, responsePreview: undefined, hasError: false } }; // clear unexecuted ones
+    });
+
+    setNodes(updatedNodes);
+
+    // Auto-Select the Webhook node, or the node that failed, or the last executed node
+    const executedNodeIds = Object.keys(exec.nodesContext).filter(k => k !== 'error');
+    const targetNodeId = executedNodeIds.find(id => !!exec.nodesContext[id]?.error) || executedNodeIds[executedNodeIds.length - 1] || updatedNodes[0]?.id;
+    const targetNode = updatedNodes.find(n => n.id === targetNodeId);
+
+    setSelectedNode(targetNode || null);
+  };
+
   const upstreamNodes = selectedNode ? getUpstreamNodes(selectedNode.id, nodes, edges) : [];
 
   const handleTestNode = async (node: Node) => {
@@ -247,7 +383,7 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: responseData } } : prev));
 
       } else if (node.type === 'mistralNode') {
-        if (!apiKey) throw new Error("Por favor ingresa tu Mistral API Key en la configuración superior.");
+        if (!credentials.mistralKey) throw new Error("Por favor ingresa tu Mistral API Key en las Credenciales.");
         const model = String(node.data?.model || 'mistral-large-latest');
         const systemPrompt = replaceVariables(String(node.data?.systemPrompt || ''));
         const userMessage = replaceVariables(String(node.data?.userMessage || ''));
@@ -261,7 +397,7 @@ export default function App() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
+            "Authorization": `Bearer ${credentials.mistralKey}`
           },
           body: JSON.stringify({
             model,
@@ -276,6 +412,53 @@ export default function App() {
 
         const json = await res.json();
         const output = json.choices[0]?.message?.content || json;
+        setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+        setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+
+      } else if (node.type === 'huggingFaceNode') {
+        if (!credentials.huggingFaceKey) throw new Error("Por favor ingresa tu Hugging Face API Key en las Credenciales.");
+        const model = String(node.data?.model || 'meta-llama/Meta-Llama-3-8B-Instruct');
+        const prompt = "Hola, responde esto brevemente"; // Since it's a test, keep it simple.
+
+        const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${credentials.huggingFaceKey}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ inputs: prompt })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || res.statusText);
+        }
+
+        const json = await res.json();
+        const output = Array.isArray(json) ? json[0]?.generated_text : json;
+        setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+        setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+
+      } else if (node.type === 'elevenLabsNode') {
+        if (!credentials.elevenLabsKey) throw new Error("Por favor ingresa tu ElevenLabs API Key en las Credenciales.");
+        const voiceId = String(node.data?.voiceId || 'JBFqnCBcs611NsnJI8XM');
+        const textToSpeech = "Probando síntesis de voz con ElevenLabs.";
+
+        const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          method: "POST",
+          headers: {
+            "xi-api-key": credentials.elevenLabsKey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ text: textToSpeech })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail?.message || res.statusText);
+        }
+
+        const output = "Audio generado exitosamente (Test mode local). Revisa la ejecución global para confirmar el blob.";
         setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
@@ -306,7 +489,7 @@ export default function App() {
     stopExecutionRef.current = true;
   };
 
-  const handlePlay = async () => {
+  const handlePlay = async (initialPayload?: any) => {
     if (isExecuting) return;
     setIsExecuting(true);
     stopExecutionRef.current = false;
@@ -315,6 +498,17 @@ export default function App() {
     setExecutionLogs([{ time: new Date().toLocaleTimeString(), message: 'Inicializando motor de ejecución Le Flux...', type: 'info' }]);
 
     const flowContext: Record<string, any> = {};
+
+    if (initialPayload && Object.keys(initialPayload).length > 0) {
+      // Encontrar nodos webhooks y setearles el payload
+      const webhooks = nodes.filter(n => n.type === 'webhookNode');
+      webhooks.forEach(wh => {
+        flowContext[wh.id] = { data: initialPayload };
+        setNodes(nds => nds.map(n => n.id === wh.id ? { ...n, data: { ...n.data, responsePreview: initialPayload } } : n));
+      });
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Payload externo inyectado vía Socket.io.', type: 'info' }]);
+    }
+
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     // Simulate initial setup delay
@@ -369,10 +563,10 @@ export default function App() {
 
       const isMistralNode = ['pixtralNode', 'codestralNode', 'documentAINode', 'audioNode', 'batchNode', 'contextNode', 'mistralNode'].includes(node.type!);
 
-      if (isMistralNode && !apiKey) {
+      if (isMistralNode && !credentials.mistralKey) {
         setExecutionLogs(prev => [...prev, {
           time: new Date().toLocaleTimeString(),
-          message: `Error en ${node.data?.label || node.type}: API Key de Mistral es requerida para este servicio.`,
+          message: `Error en ${node.data?.label || node.type}: API Key de Mistral es requerida en Credenciales.`,
           type: 'error'
         }]);
         hasError = true;
@@ -449,7 +643,7 @@ export default function App() {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${apiKey}`
+              "Authorization": `Bearer ${credentials.mistralKey}`
             },
             body: JSON.stringify({
               model,
@@ -472,6 +666,108 @@ export default function App() {
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Mistral completado con éxito.`, type: 'success' }]);
         } catch (error: any) {
           setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Mistral: ${error.message}`, hasError: true } } : n));
+          hasError = true;
+          break;
+        }
+
+      } else if (node.type === 'huggingFaceNode') {
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando HuggingFace...`, type: 'warning' }]);
+
+        if (!credentials.huggingFaceKey) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta HF API Key`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+        let prompt = "Responde brevemente a lo siguiente:";
+        // Get upstream dependencies data if available as prompt input conceptual override
+        const upstreamEdges = edges.filter(e => e.target === node.id);
+        if (upstreamEdges.length > 0) {
+          const prevData = flowContext[upstreamEdges[0].source]?.data;
+          if (prevData) prompt = typeof prevData === 'object' ? JSON.stringify(prevData) : String(prevData);
+        }
+
+        const model = String(node.data?.model || 'meta-llama/Meta-Llama-3-8B-Instruct');
+
+        try {
+          const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${credentials.huggingFaceKey}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ inputs: prompt })
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || res.statusText);
+          }
+
+          const json = await res.json();
+          const output = Array.isArray(json) ? json[0]?.generated_text : json;
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+          setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+          flowContext[node.id] = { data: output };
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `HuggingFace exito.`, type: 'success' }]);
+        } catch (error: any) {
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo HuggingFace: ${error.message}`, hasError: true } } : n));
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error HF: ${error.message}`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+      } else if (node.type === 'elevenLabsNode') {
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando ElevenLabs...`, type: 'warning' }]);
+
+        if (!credentials.elevenLabsKey) {
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta ElevenLabs API Key`, type: 'error' }]);
+          hasError = true;
+          break;
+        }
+
+        const replaceVariables = (text: string) => {
+          if (!text) return '';
+          return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
+            const parts = path.split('.');
+            let current: any = flowContext;
+            for (const p of parts) {
+              if (current && typeof current === 'object' && p in current) {
+                current = current[current.hasOwnProperty(p) ? p : p];
+              } else {
+                return 'null';
+              }
+            }
+            return typeof current === 'object' ? JSON.stringify(current) : String(current);
+          });
+        };
+
+        const voiceId = String(node.data?.voiceId || 'JBFqnCBcs611NsnJI8XM');
+        const textToSpeech = replaceVariables(String(node.data?.text || 'Hola mundo'));
+
+        try {
+          const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+            method: "POST",
+            headers: {
+              "xi-api-key": credentials.elevenLabsKey,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ text: textToSpeech })
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail?.message || res.statusText);
+          }
+
+          const output = "Audio Blob generado exitosamente.";
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
+          setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
+          flowContext[node.id] = { data: output };
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `ElevenLabs exito.`, type: 'success' }]);
+        } catch (error: any) {
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo ElevenLabs: ${error.message}`, hasError: true } } : n));
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error ElevenLabs: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -508,17 +804,43 @@ export default function App() {
         setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando Data Mapper basado en contexto...`, type: 'success' }]);
 
       } else if (node.type === 'responseNode') {
-        // Collect everything executed previously to show in the Response node
+        const replaceVariables = (text: string) => {
+          if (!text) return '';
+          return text.replace(/\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}/g, (_, path) => {
+            const parts = path.split('.');
+            let current: any = flowContext;
+            for (const p of parts) {
+              if (current && typeof current === 'object' && p in current) {
+                current = current[current.hasOwnProperty(p) ? p : p];
+              } else {
+                return 'null';
+              }
+            }
+            return typeof current === 'object' ? JSON.stringify(current) : String(current);
+          });
+        };
+
+        let finalResponse: any = flowContext;
+        if (node.data?.responseMode === 'custom') {
+          const parsedStr = replaceVariables(String(node.data?.responseBody || ''));
+          try {
+            finalResponse = JSON.parse(parsedStr);
+          } catch (e) {
+            finalResponse = parsedStr;
+          }
+        }
+
+        // Mostrar la salida final localmente en el nodo
         setNodes((nds) => nds.map((n) => {
           if (n.id === node.id) {
-            return { ...n, data: { ...n.data, responsePreview: flowContext } };
+            return { ...n, data: { ...n.data, responsePreview: finalResponse } };
           }
           return n;
         }));
-        setSelectedNode(prev => prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: flowContext } } : prev);
+        setSelectedNode(prev => prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: finalResponse } } : prev);
 
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Retornando respuesta final (status 200). Payload finalizado.`, type: 'success' }]);
-        flowContext[node.id] = { data: { status: 200, payload: flowContext } };
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Retornando respuesta final (${node.data?.responseMode === 'custom' ? 'Custom' : 'Global'}). Payload finalizado.`, type: 'success' }]);
+        flowContext[node.id] = { data: finalResponse };
       } else {
         setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando nodo: ${node.data?.label || node.type}`, type: 'success' }]);
         const defaultData = { executed: true, timestamp: new Date().toISOString() };
@@ -543,6 +865,11 @@ export default function App() {
     setIsExecuting(false);
   };
 
+  // Mantener referencia actualizada
+  useEffect(() => {
+    handlePlayRef.current = handlePlay;
+  }, [handlePlay]);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-mistral-bg text-mistral-text font-sans">
       <Header
@@ -551,15 +878,27 @@ export default function App() {
         onSelectFlow={handleSelectFlow}
         onNewFlow={handleNewFlow}
         onSaveFlow={handleSaveFlow}
-        apiKey={apiKey}
-        onApiKeyChange={setApiKey}
+        onOpenCredentials={() => setIsCredentialsOpen(true)}
         onPlay={handlePlay}
         onStop={handleStop}
         isExecuting={isExecuting}
+        viewMode={viewMode}
+        onChangeViewMode={(mode) => {
+          setViewMode(mode);
+          if (mode === 'editor') setActiveExecutionId(null); // clear sub-state
+        }}
       />
 
       <div className="flex flex-1 h-full overflow-hidden relative">
-        <Sidebar />
+        {viewMode === 'editor' ? (
+          <Sidebar />
+        ) : (
+          <ExecutionsSidebar
+            executions={executions}
+            activeExecutionId={activeExecutionId}
+            onSelectExecution={handleSelectExecution}
+          />
+        )}
 
         <main className="flex-1 relative border-x border-mistral-border">
           {nodes.length === 0 && (
@@ -585,11 +924,29 @@ export default function App() {
             className="bg-mistral-bg"
           >
             <Background gap={20} color="#374151" variant={BackgroundVariant.Lines} />
-            <Controls className="bg-mistral-panel border-mistral-border fill-white text-white" />
+            <Controls
+              style={{
+                backgroundColor: '#1a2234',
+                borderColor: '#4B5563',
+                fill: '#FCD34D',
+                color: '#fff'
+              }}
+              className="react-flow-custom-controls border border-mistral-border rounded shadow-lg overflow-hidden"
+            />
             <MiniMap
-              className="bg-mistral-panel border border-mistral-border"
-              nodeColor="#FCD34D"
-              maskColor="rgba(17, 24, 39, 0.7)"
+              className="bg-[#1a2234] border border-mistral-border rounded-lg shadow-xl"
+              maskColor="rgba(17, 24, 39, 0.8)"
+              nodeComponent={MiniMapCustomNode}
+              nodeColor={(n) => {
+                if (n.type === 'webhookNode') return '#10B981'; // green
+                if (n.type === 'responseNode') return '#3B82F6'; // blue
+                if (n.type === 'mistralNode' || n.type === 'pixtralNode') return '#F59E0B'; // orange
+                if (n.type === 'httpNode') return '#6366F1'; // indigo
+                if (n.type === 'huggingFaceNode') return '#FBBF24'; // yellow
+                if (n.type === 'elevenLabsNode') return '#818CF8'; // soft indigo
+                return '#6B7280'; // gray
+              }}
+              nodeBorderRadius={8}
             />
           </ReactFlow>
         </main>
@@ -618,6 +975,20 @@ export default function App() {
           />
         )}
       </div>
+
+      <CredentialsModal
+        isOpen={isCredentialsOpen}
+        onClose={() => setIsCredentialsOpen(false)}
+        credentials={credentials}
+        onSave={(newCreds) => {
+          setCredentials(newCreds);
+          localStorage.setItem('leflux_credentials', JSON.stringify(newCreds));
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Credenciales guardadas localmente.', type: 'info' }]);
+
+          // Push it to backend automatically upon saving credentials
+          socket.emit('save_flow', { nodes, edges, credentials: newCreds });
+        }}
+      />
 
       <footer className="h-12 bg-[#1a2234] border-t border-mistral-border flex items-center justify-between px-6 shrink-0 text-xs text-mistral-muted transition-colors">
         <div className="flex items-center gap-4">
