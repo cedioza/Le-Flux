@@ -207,33 +207,33 @@ export default function App() {
     setFlows(updatedFlows);
     localStorage.setItem('leflux_flows', JSON.stringify(updatedFlows));
 
-    // Guardar en backend (Producción Headless) - Enviar TODOS los flujos
-    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Empujando flows y Settings al backend Headless...', type: 'info' }]);
+    // Save to backend (Headless Production) - Send ALL flows
+    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Pushing flows and Settings to Headless backend...', type: 'info' }]);
     socket.emit('save_flow', { flows: updatedFlows, credentials });
   };
 
   useEffect(() => {
     socket.on('save_flow_success', () => {
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flow guardado exitosamente en Headless JSON.', type: 'success' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flow saved successfully to Headless JSON.', type: 'success' }]);
     });
     socket.on('save_flow_error', (err) => {
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error guardando en backend: ${err.message}`, type: 'error' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error saving to backend: ${err.message}`, type: 'error' }]);
     });
 
     socket.on('webhook_received', ({ webhookId, payload }) => {
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `[MODO TEST] Webhook ID ${webhookId} recibido. Ejecutando flujo automáticamente...`, type: 'warning' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `[TEST MODE] Webhook ID ${webhookId} received. Executing flow automatically...`, type: 'warning' }]);
       if (handlePlayRef.current) {
         handlePlayRef.current(payload);
       }
     });
 
     socket.on('test_timeout', ({ webhookId }) => {
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `[MODO TEST] Tiempo expirado (2 mins) para el webhook ${webhookId}. Escucha desactivada.`, type: 'info' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `[TEST MODE] Time expired (2 mins) for webhook ${webhookId}. Listener stopped.`, type: 'info' }]);
     });
 
     socket.on('new_execution', (exec: ExecutionData) => {
       setExecutions(prev => [exec, ...prev]);
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Nueva Ejecución Background completada (${exec.success ? 'Success' : 'Failed'}).`, type: exec.success ? 'success' : 'error' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `New Background Execution completed (${exec.success ? 'Success' : 'Failed'}).`, type: exec.success ? 'success' : 'error' }]);
     });
 
     fetch(import.meta.env.PROD ? '/api/executions' : 'http://localhost:3000/api/executions')
@@ -383,7 +383,7 @@ export default function App() {
       if (node.type === 'httpNode') {
         const method = String(node.data?.method || 'GET');
         const url = String(node.data?.url || '');
-        if (!url) throw new Error("Por favor ingresa un Endpoint URL.");
+        if (!url) throw new Error("Please enter an Endpoint URL.");
         let headers: Record<string, string> = {};
         try { headers = JSON.parse(String(node.data?.headers || '{}')); } catch (e) { }
 
@@ -399,7 +399,7 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: responseData } } : prev));
 
       } else if (node.type === 'mistralNode') {
-        if (!credentials.mistralKey) throw new Error("Por favor ingresa tu Mistral API Key en las Credenciales.");
+        if (!credentials.mistralKey) throw new Error("Please enter your Mistral API Key in Credentials.");
         const model = String(node.data?.model || 'mistral-large-latest');
         const systemPrompt = replaceVariables(String(node.data?.systemPrompt || ''));
         const userMessage = replaceVariables(String(node.data?.userMessage || ''));
@@ -432,7 +432,7 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
       } else if (node.type === 'pixtralNode') {
-        if (!credentials.mistralKey) throw new Error("Por favor ingresa tu Mistral API Key en las Credenciales.");
+        if (!credentials.mistralKey) throw new Error("Please enter your Mistral API Key in Credentials.");
         const prompt = replaceVariables(String(node.data?.prompt || 'What is in this image?'));
         const imageSource = replaceVariables(String(node.data?.imageSource || ''));
 
@@ -471,9 +471,9 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
       } else if (node.type === 'huggingFaceNode') {
-        if (!credentials.huggingFaceKey) throw new Error("Por favor ingresa tu Hugging Face API Key en las Credenciales.");
+        if (!credentials.huggingFaceKey) throw new Error("Please enter your Hugging Face API Key in Credentials.");
         const model = String(node.data?.model || 'meta-llama/Meta-Llama-3-8B-Instruct');
-        const prompt = "Hola, responde esto brevemente"; // Since it's a test, keep it simple.
+        const prompt = "Hello, respond briefly"; // Since it's a test, keep it simple.
 
         const res = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
           method: "POST",
@@ -495,9 +495,9 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
       } else if (node.type === 'elevenLabsNode') {
-        if (!credentials.elevenLabsKey) throw new Error("Por favor ingresa tu ElevenLabs API Key en las Credenciales.");
+        if (!credentials.elevenLabsKey) throw new Error("Please enter your ElevenLabs API Key in Credentials.");
         const voiceId = String(node.data?.voiceId || 'JBFqnCBcs611NsnJI8XM');
-        const textToSpeech = "Probando síntesis de voz con ElevenLabs.";
+        const textToSpeech = "Testing voice synthesis with ElevenLabs.";;
 
         const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
           method: "POST",
@@ -513,12 +513,12 @@ export default function App() {
           throw new Error(err.detail?.message || res.statusText);
         }
 
-        const output = "Audio generado exitosamente (Test mode local). Revisa la ejecución global para confirmar el blob.";
+        const output = "Audio generated successfully (Local test mode). Check the global execution to confirm the blob.";;
         setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
       } else if (node.type === 'telegramMessageNode') {
-        if (!credentials.telegramToken) throw new Error("Falta Telegram Bot Token en Credenciales.");
+        if (!credentials.telegramToken) throw new Error("Missing Telegram Bot Token in Credentials.");
 
         const replaceVariables = (text: string) => {
           if (!text) return '';
@@ -543,9 +543,9 @@ export default function App() {
         };
 
         const chatId = replaceVariables(String(node.data?.chatId || ''));
-        const textMessage = replaceVariables(String(node.data?.message || 'Prueba desde Mistral Flow Studio'));
+        const textMessage = replaceVariables(String(node.data?.message || 'Test from Mistral Flow Studio'));
 
-        if (!chatId) throw new Error('Chat ID inválido o vacío para Telegram.');
+        if (!chatId) throw new Error('Invalid or empty Chat ID for Telegram.');
 
         const res = await fetch(`https://api.telegram.org/bot${credentials.telegramToken}/sendMessage`, {
           method: "POST",
@@ -560,7 +560,7 @@ export default function App() {
           throw new Error(err.description || res.statusText);
         }
 
-        const output = `Mensaje de prueba enviado a ${chatId} exitosamente.`;
+        const output = `Test message sent to ${chatId} successfully.`;
         setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
 
@@ -578,7 +578,7 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: previewObj } } : prev));
 
       } else {
-        // Nada extra que ejecutar para nodos genéricos
+        // Nothing extra to execute for generic nodes
       }
     } catch (err: any) {
       const errorMsg = `Error en Test: ${err.message}`;
@@ -597,18 +597,18 @@ export default function App() {
     stopExecutionRef.current = false;
     setExecutionLatency(null);
     const startTime = Date.now();
-    setExecutionLogs([{ time: new Date().toLocaleTimeString(), message: 'Inicializando motor de ejecución Le Flux...', type: 'info' }]);
+    setExecutionLogs([{ time: new Date().toLocaleTimeString(), message: 'Initializing Le Flux execution engine...', type: 'info' }]);
 
     const flowContext: Record<string, any> = {};
 
     if (initialPayload && Object.keys(initialPayload).length > 0) {
-      // Encontrar nodos webhooks y setearles el payload
+      // Find webhook nodes and set the payload
       const webhooks = nodes.filter(n => n.type === 'webhookNode');
       webhooks.forEach(wh => {
         flowContext[wh.id] = { data: initialPayload };
         setNodes(nds => nds.map(n => n.id === wh.id ? { ...n, data: { ...n.data, responsePreview: initialPayload } } : n));
       });
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Payload externo inyectado vía Socket.io.', type: 'info' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'External payload injected via Socket.io.', type: 'info' }]);
     }
 
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -642,7 +642,7 @@ export default function App() {
     // Fallback to original order if cycle is detected or sort fails to include all nodes
     const nodesToExecute = sortedNodes.length === nodes.length ? sortedNodes : nodes;
 
-    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Flujo detectado: ${nodes.length} nodos, ${edges.length} conexiones. Orden resuelto.`, type: 'info' }]);
+    setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Flow detected: ${nodes.length} nodes, ${edges.length} connections. Order resolved.`, type: 'info' }]);
 
     let hasError = false;
 
@@ -654,7 +654,7 @@ export default function App() {
     // Execution loop
     for (const node of nodesToExecute) {
       if (stopExecutionRef.current) {
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Ejecución detenida por el usuario.', type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Execution stopped by user.', type: 'warning' }]);
         hasError = true;
         break;
       }
@@ -668,7 +668,7 @@ export default function App() {
       if (isMistralNode && !credentials.mistralKey) {
         setExecutionLogs(prev => [...prev, {
           time: new Date().toLocaleTimeString(),
-          message: `Error en ${node.data?.label || node.type}: API Key de Mistral es requerida en Credenciales.`,
+          message: `Error in ${node.data?.label || node.type}: Mistral API Key is required in Credentials.`,
           type: 'error'
         }]);
         hasError = true;
@@ -683,7 +683,7 @@ export default function App() {
           headers = JSON.parse(String(node.data?.headers || '{}'));
         } catch (e) { }
 
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando ${method} hacia ${url}...`, type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing ${method} to ${url}...`, type: 'warning' }]);
 
         let responseData: any = null;
         try {
@@ -705,11 +705,11 @@ export default function App() {
         } catch (error: any) {
           setNodes((nds) => nds.map((n) => {
             if (n.id === node.id) {
-              return { ...n, data: { ...n.data, responsePreview: `Fallo HTTP: ${error.message}`, hasError: true } };
+              return { ...n, data: { ...n.data, responsePreview: `HTTP Failed: ${error.message}`, hasError: true } };
             }
             return n;
           }));
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Fallo HTTP request: ${error.message}.`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `HTTP request failed: ${error.message}.`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -738,7 +738,7 @@ export default function App() {
         if (userMessage) messages.push({ role: 'user', content: userMessage });
         if (messages.length === 0) messages.push({ role: 'user', content: 'Say hello' });
 
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando Mistral (${model})...`, type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing Mistral (${model})...`, type: 'warning' }]);
 
         try {
           const res = await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -765,18 +765,18 @@ export default function App() {
           setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
           flowContext[node.id] = { data: output };
 
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Mistral completado con éxito.`, type: 'success' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Mistral completed successfully.`, type: 'success' }]);
         } catch (error: any) {
-          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Mistral: ${error.message}`, hasError: true } } : n));
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Mistral Failed: ${error.message}`, hasError: true } } : n));
           hasError = true;
           break;
         }
 
       } else if (node.type === 'pixtralNode') {
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando Pixtral Vision...`, type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing Pixtral Vision...`, type: 'warning' }]);
 
         if (!credentials.mistralKey) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta Mistral API Key para Pixtral`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Missing Mistral API Key for Pixtral`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -807,7 +807,7 @@ export default function App() {
         const imageSource = replaceVariables(String(node.data?.imageSource || ''));
 
         if (!imageSource || (!imageSource.startsWith('data:image') && !imageSource.startsWith('http'))) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Fuente de imagen inválida o ausente. (Data URI o HTTP URL requerido)`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Invalid or missing image source. (Data URI or HTTP URL required)`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -845,24 +845,24 @@ export default function App() {
           setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
           flowContext[node.id] = { data: output };
 
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Pixtral completado con éxito.`, type: 'success' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Pixtral completed successfully.`, type: 'success' }]);
         } catch (error: any) {
-          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Pixtral: ${error.message}`, hasError: true } } : n));
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Pixtral Failed: ${error.message}`, hasError: true } } : n));
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error Pixtral: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
         }
 
       } else if (node.type === 'huggingFaceNode') {
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando HuggingFace...`, type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing HuggingFace...`, type: 'warning' }]);
 
         if (!credentials.huggingFaceKey) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta HF API Key`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Missing HF API Key`, type: 'error' }]);
           hasError = true;
           break;
         }
 
-        let prompt = "Responde brevemente a lo siguiente:";
+        let prompt = "Respond briefly to the following:";
         // Get upstream dependencies data if available as prompt input conceptual override
         const upstreamEdges = edges.filter(e => e.target === node.id);
         if (upstreamEdges.length > 0) {
@@ -892,19 +892,19 @@ export default function App() {
           setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
           setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
           flowContext[node.id] = { data: output };
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `HuggingFace exito.`, type: 'success' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `HuggingFace completed.`, type: 'success' }]);
         } catch (error: any) {
-          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo HuggingFace: ${error.message}`, hasError: true } } : n));
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `HuggingFace Failed: ${error.message}`, hasError: true } } : n));
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error HF: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
         }
 
       } else if (node.type === 'elevenLabsNode') {
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando ElevenLabs...`, type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing ElevenLabs...`, type: 'warning' }]);
 
         if (!credentials.elevenLabsKey) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta ElevenLabs API Key`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Missing ElevenLabs API Key`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -943,23 +943,23 @@ export default function App() {
             throw new Error(err.detail?.message || res.statusText);
           }
 
-          const output = "Audio Blob generado exitosamente.";
+          const output = "Audio Blob generated successfully.";;
           setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
           setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
           flowContext[node.id] = { data: output };
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `ElevenLabs exito.`, type: 'success' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `ElevenLabs completed.`, type: 'success' }]);
         } catch (error: any) {
-          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo ElevenLabs: ${error.message}`, hasError: true } } : n));
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `ElevenLabs Failed: ${error.message}`, hasError: true } } : n));
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error ElevenLabs: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
         }
 
       } else if (node.type === 'telegramMessageNode') {
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Enviando mensaje Telegram...`, type: 'warning' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Sending Telegram message...`, type: 'warning' }]);
 
         if (!credentials.telegramToken) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Falta Telegram Bot Token en Credenciales`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Missing Telegram Bot Token in Credentials`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -990,7 +990,7 @@ export default function App() {
         const textMessage = replaceVariables(String(node.data?.message || ''));
 
         if (!chatId) {
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Chat ID inválido o vacío para Telegram`, type: 'error' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Invalid or empty Chat ID for Telegram`, type: 'error' }]);
           hasError = true;
           break;
         }
@@ -1009,13 +1009,13 @@ export default function App() {
             throw new Error(err.description || res.statusText);
           }
 
-          const output = `Mensaje enviado a ${chatId} exitosamente.`;
+          const output = `Message sent to ${chatId} successfully.`;
           setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: output } } : n));
           setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: output } } : prev));
           flowContext[node.id] = { data: output };
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Telegram exito.`, type: 'success' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Telegram completed.`, type: 'success' }]);
         } catch (error: any) {
-          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Fallo Telegram: ${error.message}`, hasError: true } } : n));
+          setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: `Telegram Failed: ${error.message}`, hasError: true } } : n));
           setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Error Telegram: ${error.message}`, type: 'error' }]);
           hasError = true;
           break;
@@ -1050,7 +1050,7 @@ export default function App() {
         setSelectedNode((prev) => (prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: previewObj } } : prev));
         flowContext[node.id] = { data: previewObj };
 
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando Data Mapper basado en contexto...`, type: 'success' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing Data Mapper from context...`, type: 'success' }]);
 
       } else if (node.type === 'responseNode') {
         const replaceVariables = (text: string) => {
@@ -1088,10 +1088,10 @@ export default function App() {
         }));
         setSelectedNode(prev => prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: finalResponse } } : prev);
 
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Retornando respuesta final (${node.data?.responseMode === 'custom' ? 'Custom' : 'Global'}). Payload finalizado.`, type: 'success' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Returning final response (${node.data?.responseMode === 'custom' ? 'Custom' : 'Global'}). Payload finalized.`, type: 'success' }]);
         flowContext[node.id] = { data: finalResponse };
       } else {
-        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Ejecutando nodo: ${node.data?.label || node.type}`, type: 'success' }]);
+        setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: `Executing node: ${node.data?.label || node.type}`, type: 'success' }]);
         const defaultData = { executed: true, timestamp: new Date().toISOString() };
         setNodes((nds) => nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, responsePreview: defaultData } } : n));
         setSelectedNode(prev => prev && prev.id === node.id ? { ...prev, data: { ...prev.data, responsePreview: defaultData } } : prev);
@@ -1105,9 +1105,9 @@ export default function App() {
 
     await delay(1000);
     if (!hasError) {
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flujo finalizado exitosamente.', type: 'info' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flow completed successfully.', type: 'info' }]);
     } else {
-      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flujo abortado debido a un error.', type: 'error' }]);
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Flow aborted due to an error.', type: 'error' }]);
     }
 
     setExecutionLatency(endTime - startTime);
@@ -1153,7 +1153,7 @@ export default function App() {
         <main className="flex-1 relative border-x border-mistral-border">
           {nodes.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <h1 className="text-4xl font-bold text-gray-700 uppercase tracking-widest">Arrastra nodos aquí</h1>
+              <h1 className="text-4xl font-bold text-gray-700 uppercase tracking-widest">Drag nodes here</h1>
             </div>
           )}
 
@@ -1234,7 +1234,7 @@ export default function App() {
         onSave={(newCreds) => {
           setCredentials(newCreds);
           localStorage.setItem('leflux_credentials', JSON.stringify(newCreds));
-          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Credenciales guardadas localmente.', type: 'info' }]);
+          setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), message: 'Credentials saved locally.', type: 'info' }]);
 
           // Push it to backend automatically upon saving credentials
           socket.emit('save_flow', { nodes, edges, credentials: newCreds });
@@ -1245,12 +1245,12 @@ export default function App() {
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isExecuting ? 'bg-green-400 animate-pulse' : 'bg-mistral-orange'}`} />
-            {isExecuting ? 'Ejecutándose' : 'Workflow válido'}
+            {isExecuting ? 'Running' : 'Workflow valid'}
           </span>
-          <span className="border-l border-mistral-border pl-4">Costo estimado $0.02</span>
+          <span className="border-l border-mistral-border pl-4">Est. cost $0.02</span>
           <span className="border-l border-mistral-border pl-4">Tokens: 1.2K</span>
           <span className="border-l border-mistral-border pl-4">
-            Latencia: {isExecuting ? '...' : executionLatency !== null ? `${executionLatency}ms` : '0ms'}
+            Latency: {isExecuting ? '...' : executionLatency !== null ? `${executionLatency}ms` : '0ms'}
           </span>
         </div>
         <div>

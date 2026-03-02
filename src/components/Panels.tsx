@@ -37,7 +37,7 @@ const DraggablePanel = ({ title, icon: Icon, children, defaultPosition, colorCla
                 className="p-2 border-b-4 border-mistral-border bg-[#171717] flex items-center justify-between cursor-move select-none active:cursor-grabbing"
                 onMouseDown={(e) => { setIsDragging(true); dragRef.current = { x: e.clientX - position.x, y: e.clientY - position.y }; }}
                 onDoubleClick={onDoubleClickHeader}
-                title="Arrastrar panel (Click) / Ocultar cont. (Doble Click en el título)"
+                title="Drag panel (Click) / Toggle content (Double Click on title)"
             >
                 <div className={`flex items-center gap-2 ${colorClass} text-[10px] font-bold uppercase tracking-widest pointer-events-none`}>
                     {Icon && <Icon className="w-4 h-4" />} {title}
@@ -123,7 +123,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     e.dataTransfer.setData('text/plain', varTag);
                                 }}
                             >
-                                <span className="text-blue-300 font-mono flex items-center gap-1 cursor-grab active:cursor-grabbing" title="Arrastra hacia una variable">
+                                <span className="text-blue-300 font-mono flex items-center gap-1 cursor-grab active:cursor-grabbing" title="Drag to a variable">
                                     <span className="text-gray-500">{isObject ? '{ }' : ' T '}</span> {key}
                                 </span>
                                 {!isObject && (
@@ -134,7 +134,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                             setTimeout(() => setCopiedPath(null), 2000);
                                         }}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-gray-400 hover:text-white bg-gray-800 px-1 rounded cursor-pointer"
-                                        title="Copiar variable tag"
+                                        title="Copy variable tag"
                                     >
                                         {copiedPath === varTag ? <CheckCircle2 className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
                                     </button>
@@ -148,7 +148,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     <button
                                         onClick={() => navigator.clipboard.writeText(String(value))}
                                         className="absolute top-0.5 right-0.5 opacity-0 group-hover/val:opacity-100 transition-opacity bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white p-0.5 rounded"
-                                        title="Copiar valor"
+                                        title="Copy value"
                                     >
                                         <Copy className="w-2.5 h-2.5" />
                                     </button>
@@ -217,14 +217,14 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <UpstreamDataViewer key={`${unode.id}-${unode.data?.responsePreview ? 'loaded' : 'null'}`} unode={unode} />
                             ))
                         ) : (
-                            <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4 cursor-default">Sin datos de entrada</div>
+                            <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4 cursor-default">No input data</div>
                         )
                     )}
                 </div>
             </DraggablePanel>
 
             <DraggablePanel
-                title="PREVIEW RESPUESTA"
+                title="RESPONSE PREVIEW"
                 icon={Terminal}
                 defaultPosition={{ x: 300, y: 460 }}
                 colorClass="text-green-400"
@@ -242,9 +242,9 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                         navigator.clipboard.writeText(text);
                                     }}
                                     className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white p-1 rounded text-[10px] flex items-center gap-1 z-10"
-                                    title="Copiar respuesta"
+                                    title="Copy response"
                                 >
-                                    <Copy className="w-3 h-3" /> Copiar
+                                    <Copy className="w-3 h-3" /> Copy
                                 </button>
                                 <pre className="text-[10px] text-mistral-muted font-mono whitespace-pre-wrap break-words select-text">
                                     {typeof selectedNode.data.responsePreview === 'object'
@@ -254,7 +254,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             </div>
                         ) : (
                             <div className="text-[10px] text-mistral-muted font-mono italic p-2 text-center mt-4">
-                                Ejecuta o Testea el nodo para ver su respuesta.
+                                Execute or Test the node to see its response.
                             </div>
                         )
                     )}
@@ -265,7 +265,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                 <div className="p-4 border-b border-mistral-border flex items-center justify-between bg-mistral-panel shrink-0">
                     <div className="flex items-center gap-2 text-white">
                         <Settings className="w-4 h-4 text-mistral-orange" />
-                        <h2 className="text-sm font-semibold">Configuración de Nodo</h2>
+                        <h2 className="text-sm font-semibold">Node Settings</h2>
                     </div>
                     <button onClick={onClose} className="text-mistral-muted hover:text-white transition-colors">
                         <X className="w-5 h-5" />
@@ -282,13 +282,13 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Nombre del Nodo</label>
+                        <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Node Name</label>
                         <input
                             type="text"
                             className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                             value={selectedNode.data?.label || selectedNode.type}
                             onChange={(e) => onUpdateData({ label: e.target.value })}
-                            placeholder="Mi Nodo"
+                            placeholder="My Node"
                         />
                     </div>
 
@@ -302,7 +302,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-mistral-muted mb-3 uppercase tracking-wide">Tools Activadas</label>
+                                <label className="block text-xs font-medium text-mistral-muted mb-3 uppercase tracking-wide">Active Tools</label>
                                 <div className="space-y-3">
                                     {[
                                         { id: 'web', label: 'Web Search API' },
@@ -324,7 +324,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">System Prompt</label>
                                 <textarea
                                     className="w-full h-32 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
-                                    defaultValue="Eres un asistente de visión diseñado para analizar facturas y recibos con precisión..."
+                                    defaultValue="You are a vision assistant designed to analyze invoices and receipts with precision..."
                                 />
                             </div>
                         </>
@@ -336,7 +336,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-blue-300 mb-2 uppercase tracking-wide">Import cURL</label>
                                 <textarea
                                     className="w-full h-16 bg-[#000] border border-blue-400/50 rounded-md px-3 py-2 text-[10px] text-blue-200 focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-blue-800"
-                                    placeholder="Pega tu comando cURL aquí... se autocompletará abajo."
+                                    placeholder="Paste your cURL command here... fields below will auto-fill."
                                     onPaste={(e) => {
                                         const text = e.clipboardData.getData('text');
                                         if (text.trim().startsWith('curl')) {
@@ -372,7 +372,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Método HTTP</label>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">HTTP Method</label>
                                 <select
                                     className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                                     value={selectedNode.data?.method || 'GET'}
@@ -411,11 +411,11 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     {selectedNode.type === 'mapperNode' && (
                         <>
                             <div className="bg-blue-400/10 border border-blue-400/30 p-3 rounded text-[11px] text-blue-200">
-                                Arrastra variables del menú izquierdo o usa <code className="bg-black/40 px-1 py-0.5 rounded text-mistral-orange">{'{{ node_xx.data.field }}'}</code>.
+                                Drag variables from the left panel or use <code className="bg-black/40 px-1 py-0.5 rounded text-mistral-orange">{'{{ node_xx.data.field }}'}</code>.
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
-                                    Mapeo de Datos
+                                    Data Mapping
                                     <button
                                         onClick={() => {
                                             const currentMappings = selectedNode.data?.mappings || [];
@@ -423,14 +423,14 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                         }}
                                         className="text-blue-400 hover:text-blue-300 font-medium lowercase"
                                     >
-                                        + añadir
+                                        + add
                                     </button>
                                 </label>
 
                                 <div className="space-y-3 bg-[#0b101e] p-3 rounded-lg border border-mistral-border">
                                     {(!selectedNode.data?.mappings || selectedNode.data.mappings.length === 0) && (
                                         <div className="text-center text-[10px] text-gray-500 py-3 italic">
-                                            No hay llaves mapeadas. Haz click en añadir.
+                                            No mapped keys yet. Click add to create one.
                                         </div>
                                     )}
 
@@ -473,8 +473,8 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             </div>
 
                             {/* Live Output Preview es interno al mapper, lo mantenemos o lo quitamos?
-                                El mapper evalúa en local, vamos a dejarlo en la barra izquierda si hacen test.
-                                Ah, pero el mapper tenía Live Output Preview. Lo quitamos también. */}
+                                The mapper evaluates locally, we'll leave it in the left bar if they test.
+                                The mapper had a Live Output Preview. We removed it too. */}
                         </>
                     )}
 
@@ -484,14 +484,14 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 {isListening ? (
                                     <>
                                         <div className="flex items-center gap-2 font-bold mb-1 animate-pulse">
-                                            <div className="w-2 h-2 bg-mistral-orange rounded-full"></div> ESCUCHANDO PETICIÓN EXTERNA...
+                                            <div className="w-2 h-2 bg-mistral-orange rounded-full"></div> LISTENING FOR EXTERNAL REQUEST...
                                         </div>
                                         <span className="font-mono">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
                                     </>
                                 ) : (
                                     <div className="text-center">
-                                        Modo Testing desactivado. Envía payloads y aparecerán aquí.<br />
-                                        <span className="text-mistral-orange font-bold mt-2 block">⚠️ Recuerda presionar "Guardar" arriba en el Header cada vez que cambies el Webhook u otros nodos, para que el servidor Background lo registre.</span>
+                                        Testing mode disabled. Send payloads and they will appear here.<br />
+                                        <span className="text-mistral-orange font-bold mt-2 block">⚠️ Remember to press "Save" in the Header whenever you change the Webhook or other nodes, so the background server registers it.</span>
                                     </div>
                                 )}
                             </div>
@@ -507,14 +507,14 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     <button
                                         onClick={() => navigator.clipboard.writeText(`http://localhost:3000/api/webhook/${selectedNode.id}`)}
                                         className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors truncate"
-                                    >Copiar</button>
+                                    >Copy</button>
                                 </div>
                                 <button
                                     onClick={handleTestWebhook}
                                     disabled={isListening}
                                     className={`w-full font-bold uppercase tracking-widest text-[10px] py-3 rounded transition-colors ${isListening ? 'bg-mistral-bg text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-green-500/20 text-green-400 hover:bg-green-500/30 border border-green-500/50'}`}
                                 >
-                                    {isListening ? 'Detener Test' : '▶ Activar Escucha (2 Mins)'}
+                                    {isListening ? 'Stop Test' : '▶ Start Listening (2 Mins)'}
                                 </button>
                             </div>
                         </>
@@ -526,27 +526,27 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 {isListening ? (
                                     <>
                                         <div className="flex items-center gap-2 font-bold mb-1 animate-pulse text-[#0088cc]">
-                                            <div className="w-2 h-2 bg-[#0088cc] rounded-full"></div> ESPERANDO MENSAJES TELEGRAM...
+                                            <div className="w-2 h-2 bg-[#0088cc] rounded-full"></div> WAITING FOR TELEGRAM MESSAGES...
                                         </div>
                                         <span className="font-mono">{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
                                     </>
                                 ) : (
                                     <div className="text-center text-xs">
-                                        El backend interno de Le Flux está escuchando permanentemente por nuevos mensajes de Telegram automáticamente (Long Polling).<br />
-                                        <span className="text-[#0088cc] font-bold mt-2 block">No es necesario configurar Webhooks en la API externa.</span>
+                                        Le Flux's internal backend is permanently listening for new Telegram messages automatically (Long Polling).<br />
+                                        <span className="text-[#0088cc] font-bold mt-2 block">No need to configure external Webhooks.</span>
                                     </div>
                                 )}
                             </div>
                             <div>
                                 <div className="text-[10px] text-gray-400 mb-4 bg-white/5 p-3 rounded border border-mistral-border text-center">
-                                    Este nodo extraerá de forma pasiva el <code>chat.id</code>, el <code>text</code> y el <code>username</code> en tiempo real.
+                                    This node will passively extract the <code>chat.id</code>, <code>text</code>, and <code>username</code> in real time.
                                 </div>
                                 <button
                                     onClick={handleTestWebhook}
                                     disabled={isListening}
                                     className={`w-full font-bold uppercase tracking-widest text-[10px] py-3 rounded transition-colors ${isListening ? 'bg-mistral-bg text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-[#0088cc]/20 text-[#0088cc] hover:bg-[#0088cc]/30 border border-[#0088cc]/50'}`}
                                 >
-                                    {isListening ? 'Detener Test' : '▶ Probar Recepción Local (2 Mins)'}
+                                    {isListening ? 'Stop Test' : '▶ Test Local Reception (2 Mins)'}
                                 </button>
                             </div>
                         </>
@@ -565,7 +565,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     value={selectedNode.data?.chatId || ''}
                                     onChange={(e) => onUpdateData({ chatId: e.target.value })}
                                 />
-                                <div className="text-[10px] text-gray-500 mt-1">Chat ID de Telegram de destino (ej. 123456789 o {'{{ nodo... }}'}).</div>
+                                <div className="text-[10px] text-gray-500 mt-1">Destination Telegram Chat ID (e.g. 123456789 or {'{{ node... }}'}).</div>
                             </div>
                             <div className="mt-4">
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide flex justify-between">
@@ -573,7 +573,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 </label>
                                 <textarea
                                     className="w-full h-32 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#0088cc] resize-none font-mono placeholder-gray-600"
-                                    placeholder="Respuesta autogenerada de: {{ pixtralNode.data.responsePreview }}"
+                                    placeholder="Auto-generated response from: {{ pixtralNode.data.responsePreview }}"
                                     value={selectedNode.data?.message || ''}
                                     onChange={(e) => onUpdateData({ message: e.target.value })}
                                 />
@@ -594,7 +594,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Code Task</label>
                                 <textarea
                                     className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono"
-                                    defaultValue="Genera una función en Python para iterar listas."
+                                    defaultValue="Generate a Python function to iterate over lists."
                                 />
                             </div>
                         </>
@@ -622,7 +622,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 </label>
                                 <textarea
                                     className="w-full h-24 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none font-mono placeholder-gray-600"
-                                    placeholder="Eres un asistente útil que responde siempre en español..."
+                                    placeholder="You are a helpful assistant that always responds concisely..."
                                     value={selectedNode.data?.systemPrompt || ''}
                                     onChange={(e) => onUpdateData({ systemPrompt: e.target.value })}
                                 />
@@ -755,7 +755,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                 </select>
                             </div>
                             <div className="bg-orange-400/10 border border-orange-400/30 p-3 rounded text-xs text-orange-200 mt-4">
-                                Los procesos Batch tienen hasta 50% de descuento pero mayor latencia.
+                                Batch processes have up to 50% discount but higher latency.
                             </div>
                         </>
                     )}
@@ -779,14 +779,14 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     {selectedNode.type === 'responseNode' && (
                         <>
                             <div className="mb-4">
-                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Modo de Respuesta</label>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Response Mode</label>
                                 <select
                                     className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
                                     value={selectedNode.data?.responseMode || 'all'}
                                     onChange={(e) => onUpdateData({ responseMode: e.target.value })}
                                 >
-                                    <option value="all">Devolver todo el Contexto (Global)</option>
-                                    <option value="custom">Respuesta Personalizada (JSON)</option>
+                                    <option value="all">Return Full Context (Global)</option>
+                                    <option value="custom">Custom Response (JSON)</option>
                                 </select>
                             </div>
 
@@ -805,7 +805,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             )}
 
                             <div>
-                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Descripción Interna</label>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Internal Description</label>
                                 <input
                                     type="text"
                                     className="w-full bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange"
@@ -817,11 +817,11 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                             {selectedNode.data?.responsePreview && (
                                 <div className="mt-4 border-t border-mistral-border pt-4">
                                     <label className="block text-xs font-medium text-green-400 mb-2 uppercase tracking-wide flex items-center gap-1">
-                                        <Terminal className="w-3 h-3" /> Payload Final Recibido
+                                        <Terminal className="w-3 h-3" /> Final Payload Received
                                     </label>
                                     <div className="bg-[#0b101e] border border-mistral-border rounded-md p-3 max-h-48 overflow-y-auto">
                                         <div className="text-[10px] text-gray-400 italic mb-2">
-                                            Revisa el panel izquierdo "PREVIEW RESPUESTA" para ver el payload procesado.
+                                            Check the left panel "RESPONSE PREVIEW" to see the processed payload.
                                         </div>
                                     </div>
                                 </div>
@@ -832,7 +832,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                     {selectedNode.type === 'default' && !isPixtral && (
                         <>
                             <div>
-                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Descripción</label>
+                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Description</label>
                                 <textarea
                                     className="w-full h-20 bg-mistral-bg border border-mistral-border rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-mistral-orange resize-none"
                                     defaultValue={selectedNode.data?.description || ''}
@@ -850,7 +850,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                         Test Node (Dry Run)
                     </button>
                     <button onClick={() => onDelete(selectedNode.id)} className="w-full bg-red-900/30 hover:bg-red-900/60 text-red-500 border border-red-900/50 font-medium py-2 rounded transition-colors text-sm flex items-center justify-center gap-2">
-                        <X className="w-4 h-4" /> Eliminar Nodo
+                        <X className="w-4 h-4" /> Delete Node
                     </button>
                 </div>
             </aside>
@@ -863,7 +863,7 @@ export const LogsPanel = ({ logs, isExecuting }: { logs: Array<{ time: string, m
         <aside className="w-[320px] bg-[#1a2234] border-l border-mistral-border h-full flex flex-col z-10 shrink-0 shadow-2xl">
             <div className="p-4 border-b border-mistral-border flex items-center gap-2 bg-mistral-panel">
                 <Terminal className="w-4 h-4 text-green-400" />
-                <h2 className="text-sm font-semibold text-white">Ejecución en vivo</h2>
+                <h2 className="text-sm font-semibold text-white">Live Execution</h2>
             </div>
 
             <div className="flex-1 bg-mistral-bg p-4 font-mono text-xs overflow-y-auto space-y-3">
@@ -882,13 +882,13 @@ export const LogsPanel = ({ logs, isExecuting }: { logs: Array<{ time: string, m
                 })}
                 {isExecuting && (
                     <div className="text-white mt-4 border-t border-gray-700 pt-2 opacity-50 block animate-pulse">
-                        Esperando siguiente evento...
+                        Waiting for next event...
                     </div>
                 )}
             </div>
 
             <div className="p-4 bg-mistral-panel border-t border-mistral-border text-xs text-mistral-muted space-y-1">
-                <div className="flex justify-between"><span>Status:</span> <span className={isExecuting ? 'text-mistral-orange animate-pulse' : 'text-green-400 font-medium'}>{isExecuting ? 'Running...' : 'Completado'}</span></div>
+                <div className="flex justify-between"><span>Status:</span> <span className={isExecuting ? 'text-mistral-orange animate-pulse' : 'text-green-400 font-medium'}>{isExecuting ? 'Running...' : 'Completed'}</span></div>
                 <div className="flex justify-between"><span>Tokens in/out:</span> <span>0 / 0</span></div>
             </div>
         </aside>
