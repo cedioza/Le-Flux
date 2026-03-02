@@ -518,6 +518,9 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                         type="text"
                                         readOnly
                                         className="flex-1 bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-[10px] text-gray-400 font-mono"
+                                        value={`${window.location.origin}/api/telegram-webhook/${selectedNode.id}`}
+                                    />
+                                    <button
                                         onClick={() => navigator.clipboard.writeText(`${window.location.origin}/api/telegram-webhook/${selectedNode.id}`)}
                                         className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors truncate"
                                     >Copiar</button>
