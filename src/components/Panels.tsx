@@ -134,12 +134,26 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                             setTimeout(() => setCopiedPath(null), 2000);
                                         }}
                                         className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-gray-400 hover:text-white bg-gray-800 px-1 rounded cursor-pointer"
-                                        title="Copiar (Click) o Arrastrar"
+                                        title="Copiar variable tag"
                                     >
                                         {copiedPath === varTag ? <CheckCircle2 className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
                                     </button>
                                 )}
                             </div>
+                            {!isObject && value !== undefined && value !== null && String(value).length > 0 && (
+                                <div className="ml-4 mt-0.5 mb-1 relative group/val">
+                                    <div className="text-[10px] text-gray-400 font-mono bg-black/40 p-1.5 rounded select-text cursor-text break-words whitespace-pre-wrap max-h-24 overflow-y-auto">
+                                        {String(value)}
+                                    </div>
+                                    <button
+                                        onClick={() => navigator.clipboard.writeText(String(value))}
+                                        className="absolute top-0.5 right-0.5 opacity-0 group-hover/val:opacity-100 transition-opacity bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white p-0.5 rounded"
+                                        title="Copiar valor"
+                                    >
+                                        <Copy className="w-2.5 h-2.5" />
+                                    </button>
+                                </div>
+                            )}
                             {isObject && renderJsonTree(value, currentPath, nodeId)}
                         </div>
                     );
@@ -196,7 +210,7 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                 colorClass="text-mistral-orange"
                 onDoubleClickHeader={() => setIsInputCollapsed(!isInputCollapsed)}
             >
-                <div className="space-y-2 select-none">
+                <div className="space-y-2">
                     {!isInputCollapsed && (
                         upstreamNodes && upstreamNodes.length > 0 ? (
                             upstreamNodes.map((unode) => (
@@ -216,11 +230,23 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                 colorClass="text-green-400"
                 onDoubleClickHeader={() => setIsOutputCollapsed(!isOutputCollapsed)}
             >
-                <div className="select-none min-h-[30px]">
+                <div className="min-h-[30px]">
                     {!isOutputCollapsed && (
                         selectedNode.data?.responsePreview ? (
-                            <div className="bg-[#171717] border-2 border-green-900/50 p-2 overflow-x-auto cursor-text">
-                                <pre className="text-[10px] text-mistral-muted font-mono whitespace-pre-wrap break-words">
+                            <div className="bg-[#171717] border-2 border-green-900/50 p-2 overflow-x-auto cursor-text relative group">
+                                <button
+                                    onClick={() => {
+                                        const text = typeof selectedNode.data.responsePreview === 'object'
+                                            ? JSON.stringify(selectedNode.data.responsePreview, null, 2)
+                                            : String(selectedNode.data.responsePreview);
+                                        navigator.clipboard.writeText(text);
+                                    }}
+                                    className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white p-1 rounded text-[10px] flex items-center gap-1 z-10"
+                                    title="Copiar respuesta"
+                                >
+                                    <Copy className="w-3 h-3" /> Copiar
+                                </button>
+                                <pre className="text-[10px] text-mistral-muted font-mono whitespace-pre-wrap break-words select-text">
                                     {typeof selectedNode.data.responsePreview === 'object'
                                         ? JSON.stringify(selectedNode.data.responsePreview, null, 2)
                                         : String(selectedNode.data.responsePreview)}

@@ -1,48 +1,97 @@
-{
-  "nodes": [
-    {
-      "id": "node_1772399872256",
-      "type": "webhookNode",
-      "position": {
-        "x": -146.8572764392407,
-        "y": -60.16585821119459
-      },
-      "data": {
-        "label": "New webhook",
-        "responsePreview": {
-          "files": {
-            "imagen": "https://res.cloudinary.com/dezprf2aq/image/upload/v1772413543/brsocwk9fp1ngxr6rwhs.png"
-          }
+[
+  {
+    "id": "flow_1772399869071",
+    "name": "Untitled Flow 3",
+    "nodes": [
+      {
+        "id": "node_1772399872256",
+        "type": "webhookNode",
+        "position": {
+          "x": -146.8572764392407,
+          "y": -60.16585821119459
         },
-        "hasError": false,
-        "isExecuting": false
-      },
-      "measured": {
-        "width": 220,
-        "height": 96
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "node_1772407311369",
-      "type": "responseNode",
-      "position": {
-        "x": 815.4080926646484,
-        "y": 13.869647204957971
-      },
-      "data": {
-        "label": "",
-        "hasError": false,
-        "responseMode": "all",
-        "responseBody": "{\"key\":\"hola mundo\"}",
-        "responsePreview": {
-          "node_1772399872256": {
+        "data": {
+          "label": "New webhook",
+          "responsePreview": {
             "files": {
               "imagen": "https://res.cloudinary.com/dezprf2aq/image/upload/v1772413543/brsocwk9fp1ngxr6rwhs.png"
             }
           },
-          "node_1772407608671": {
+          "hasError": false,
+          "isExecuting": false
+        },
+        "measured": {
+          "width": 220,
+          "height": 96
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_1772407311369",
+        "type": "responseNode",
+        "position": {
+          "x": 815.4080926646484,
+          "y": 13.869647204957971
+        },
+        "data": {
+          "label": "",
+          "hasError": false,
+          "responseMode": "all",
+          "responseBody": "{\"key\":\"hola mundo\"}",
+          "responsePreview": {
+            "node_1772399872256": {
+              "files": {
+                "imagen": "https://res.cloudinary.com/dezprf2aq/image/upload/v1772413543/brsocwk9fp1ngxr6rwhs.png"
+              }
+            },
+            "node_1772407608671": {
+              "id": "a475ebfc32ff4b39930e116dd7ac9b68",
+              "created": 1772413544,
+              "model": "mistral-small-latest",
+              "usage": {
+                "prompt_tokens": 48,
+                "total_tokens": 104,
+                "completion_tokens": 56,
+                "prompt_tokens_details": {
+                  "cached_tokens": 0
+                }
+              },
+              "object": "chat.completion",
+              "choices": [
+                {
+                  "index": 0,
+                  "finish_reason": "stop",
+                  "message": {
+                    "role": "assistant",
+                    "tool_calls": null,
+                    "content": "¡Hola! Soy el asistente virtual de la veterinaria. ¿En qué puedo ayudarte hoy? ¿Necesitas agendar una cita, información sobre algún servicio o tienes alguna consulta sobre la salud de tu mascota? Estoy aquí para ayudarte."
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "measured": {
+          "width": 200,
+          "height": 86
+        },
+        "selected": true,
+        "dragging": false
+      },
+      {
+        "id": "node_1772407608671",
+        "type": "mistralNode",
+        "position": {
+          "x": 172.53158704329218,
+          "y": -82.97992224918673
+        },
+        "data": {
+          "label": "New mistral",
+          "model": "mistral-small-latest",
+          "systemPrompt": "eres un asistente enfocado en la atención de una veterinaria  llevaras toda la información del cliente ",
+          "userMessage": "{{ node_1772399872256.data.mensaje }}",
+          "responsePreview": {
             "id": "a475ebfc32ff4b39930e116dd7ac9b68",
             "created": 1772413544,
             "model": "mistral-small-latest",
@@ -66,103 +115,446 @@
                 }
               }
             ]
-          }
-        }
+          },
+          "hasError": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 132
+        },
+        "selected": false,
+        "dragging": false
       },
-      "measured": {
-        "width": 200,
-        "height": 86
+      {
+        "id": "node_1772413568652",
+        "type": "pixtralNode",
+        "position": {
+          "x": 475.4172632232679,
+          "y": -82.73184040005461
+        },
+        "data": {
+          "label": "New pixtral",
+          "imageSource": "{{ node_1772399872256.data.files.imagen }}",
+          "responsePreview": "This image is a webpage for a real estate company named \"Martinez Inmobiliaria.\" Here's a detailed summary of the elements present in the image:\n\n1. **Header:**\n   - The header features the company's logo and name \"martinez Inmobiliaria.\"\n   - There is a navigation menu with the following options: Inicio (Home), Propiedades (Properties), Quiero comprar (I want to buy), Quiero vender (I want to sell), Quiero alquilar (I want to rent), Nosotros (About Us), Blog, and Contacto (Contact).\n\n2. **Hero Section:**\n   - A large, visually appealing image of a luxurious terrace overlooking the Mediterranean Sea.\n   - The headline reads: \"ENCUENTRA TU HOGAR A MINUTOS DEL MEDITERRÁNEO\" (Find your home minutes from the Mediterranean).\n   - A call-to-action button: \"Quiero encontrar mi casa\" (I want to find my house).\n\n3. **Testimonial Section:**\n   - A testimonial from Jorge Novo, stating: \"100% recomendable. Trato muy profesional y cercano. Muy implicados en el proyecto desde el principio. ¡Gracias!\" (100% recommendable. Very professional and close treatment. Very involved in the project from the beginning. Thanks!).\n   - The section also includes a tagline: \"Confía en nosotros como tu personal shopper inmobiliario para potenciar tu inversión\" (Trust us as your personal real estate shopper to enhance your investment).\n   - An image of a luxurious living room with a view of the Mediterranean.\n\n4. **Why Invest in Alicante Section:**\n   - The section is titled: \"¿POR QUÉ INVERTIR EN ALICANTE?\" (Why invest in Alicante?).\n   - It lists several benefits with placeholder text:\n     - Ut lorem ipsum deler sit amet, consectetur adipiscing elit, sed do eiusmod tempor.\n     - Eire eiby altir inapperemotast sinowecardatiam entis mognashior in alicante et evolobtum.\n     - Impseas solvaticlice neredia in easrkn oonos in amxvsstnsti undersadorum.\n   - An accompanying image of a modern building with a view of the sea.\n\n5. **Where to Invest Section:**\n   - The section is titled: \"¿DÓNDE PUEDO INVERTIR?\" (Where can I invest?).\n   - It provides a brief description with placeholder text:\n     - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n     - Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n     - Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n   - An image of a modern interior with a view of the Mediterranean.\n\n6. **Footer:**\n   - The footer includes the company logo and a brief mention of their services.\n   - It has sections for Navigation, Legal, and Contact information:\n     - Navigation: Inicio (Home), Propiedades (Properties), Quiero comprar (I want to buy), Quiero vender (I want to sell), Quiero alquilar (I want to rent), Nosotros (About Us).\n     - Legal: Acción (Action), Legal, Grupo oerocool, Shopper inmobiliario, Resocuados (Resources), Contacto (Contact).\n     - Contact information: Contacto es info, phone number, email, and social media icons for Facebook, Twitter, Instagram, and LinkedIn.\n   - Additional information: \"Integrado con un social inmobiliario\" (Integrated with a real estate social network).\n   - Logos indicating financing by the European Union and other certifications.\n\nThe overall design is clean, professional, and focused on showcasing luxurious properties and promoting investment in Alicante."
+        },
+        "measured": {
+          "width": 240,
+          "height": 203
+        },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "node_1772399872256",
+        "target": "node_1772407608671",
+        "animated": true,
+        "type": "deletableEdge",
+        "id": "xy-edge__node_1772399872256-node_1772407608671"
       },
-      "selected": true,
-      "dragging": false
-    },
-    {
-      "id": "node_1772407608671",
-      "type": "mistralNode",
-      "position": {
-        "x": 172.53158704329218,
-        "y": -82.97992224918673
+      {
+        "source": "node_1772407608671",
+        "target": "node_1772413568652",
+        "animated": true,
+        "type": "deletableEdge",
+        "id": "xy-edge__node_1772407608671-node_1772413568652"
       },
-      "data": {
-        "label": "New mistral",
-        "model": "mistral-small-latest",
-        "systemPrompt": "eres un asistente enfocado en la atención de una veterinaria  llevaras toda la información del cliente ",
-        "userMessage": "{{ node_1772399872256.data.mensaje }}",
-        "responsePreview": {
-          "id": "a475ebfc32ff4b39930e116dd7ac9b68",
-          "created": 1772413544,
-          "model": "mistral-small-latest",
-          "usage": {
-            "prompt_tokens": 48,
-            "total_tokens": 104,
-            "completion_tokens": 56,
-            "prompt_tokens_details": {
-              "cached_tokens": 0
+      {
+        "source": "node_1772413568652",
+        "target": "node_1772407311369",
+        "animated": true,
+        "type": "deletableEdge",
+        "id": "xy-edge__node_1772413568652-node_1772407311369"
+      }
+    ],
+    "updatedAt": 1772420312996
+  },
+  {
+    "id": "flow_1772415433339",
+    "name": "Untitled Flow 4",
+    "nodes": [
+      {
+        "id": "node_1772420151231",
+        "type": "telegramTriggerNode",
+        "position": {
+          "x": 41.160919638393665,
+          "y": 202.1094082216005
+        },
+        "data": {
+          "label": "New telegramTrigger",
+          "hasError": false,
+          "responsePreview": {
+            "data": {
+              "raw": {
+                "update_id": 435199867,
+                "message": {
+                  "message_id": 9,
+                  "from": {
+                    "id": 1234162721,
+                    "is_bot": false,
+                    "first_name": "Cristián",
+                    "last_name": "Dioza",
+                    "username": "cristiandioza",
+                    "language_code": "es"
+                  },
+                  "chat": {
+                    "id": 1234162721,
+                    "first_name": "Cristián",
+                    "last_name": "Dioza",
+                    "username": "cristiandioza",
+                    "type": "private"
+                  },
+                  "date": 1772421389,
+                  "text": "sdsasd"
+                }
+              },
+              "chat_id": 1234162721,
+              "text": "sdsasd",
+              "username": "cristiandioza",
+              "date": 1772421389
             }
           },
-          "object": "chat.completion",
-          "choices": [
+          "isExecuting": false
+        },
+        "measured": {
+          "width": 220,
+          "height": 110
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_1772421538400",
+        "type": "mistralNode",
+        "position": {
+          "x": 436.51835770069863,
+          "y": 129.77300045811964
+        },
+        "data": {
+          "label": "New mistral",
+          "systemPrompt": "eres un asistente enfocado en contestar de forma cordial sobre la hackaton de  mistral",
+          "userMessage": "{{ node_1772420151231.data.data.raw.message.text }}",
+          "hasError": false,
+          "isExecuting": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 132
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_1772421632366",
+        "type": "telegramMessageNode",
+        "position": {
+          "x": 834.1354576572922,
+          "y": 242.94094429191927
+        },
+        "data": {
+          "label": "New telegramMessage",
+          "message": "hola como estas",
+          "hasError": false,
+          "chatId": "{{ node_1772420151231.data.data.chat_id }}"
+        },
+        "measured": {
+          "width": 220,
+          "height": 89
+        },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "node_1772420151231",
+        "target": "node_1772421538400",
+        "animated": true,
+        "type": "deletableEdge",
+        "id": "xy-edge__node_1772420151231-node_1772421538400"
+      },
+      {
+        "source": "node_1772421538400",
+        "target": "node_1772421632366",
+        "animated": true,
+        "type": "deletableEdge",
+        "id": "xy-edge__node_1772421538400-node_1772421632366"
+      }
+    ],
+    "updatedAt": 1772421764418
+  },
+  {
+    "id": "flow_1772348136375",
+    "name": "Untitled Flow 2",
+    "nodes": [
+      {
+        "id": "node_1772349585921",
+        "type": "testNode",
+        "position": {
+          "x": 39.3801774672786,
+          "y": 64.86334969808746
+        },
+        "data": {
+          "label": "New test",
+          "hasError": false,
+          "responsePreview": {
+            "executed": true,
+            "timestamp": "2026-03-01T20:16:36.046Z"
+          },
+          "isExecuting": false
+        },
+        "measured": {
+          "width": 200,
+          "height": 86
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_1772349591642",
+        "type": "httpNode",
+        "position": {
+          "x": 394.2583576804095,
+          "y": 72.96559125546487
+        },
+        "data": {
+          "label": "New http",
+          "url": "https://api.escuelajs.co/api/v1/users",
+          "responsePreview": [
             {
-              "index": 0,
-              "finish_reason": "stop",
-              "message": {
-                "role": "assistant",
-                "tool_calls": null,
-                "content": "¡Hola! Soy el asistente virtual de la veterinaria. ¿En qué puedo ayudarte hoy? ¿Necesitas agendar una cita, información sobre algún servicio o tienes alguna consulta sobre la salud de tu mascota? Estoy aquí para ayudarte."
-              }
+              "id": 1,
+              "email": "john@mail.com",
+              "password": "changeme",
+              "name": "Jhon",
+              "role": "customer",
+              "avatar": "https://i.imgur.com/LDOO4Qs.jpg",
+              "creationAt": "2026-03-01T16:35:14.000Z",
+              "updatedAt": "2026-03-01T16:35:14.000Z"
+            },
+            {
+              "id": 2,
+              "email": "maria@mail.com",
+              "password": "12345",
+              "name": "Maria",
+              "role": "customer",
+              "avatar": "https://i.imgur.com/DTfowdu.jpg",
+              "creationAt": "2026-03-01T16:35:14.000Z",
+              "updatedAt": "2026-03-01T16:35:14.000Z"
+            },
+            {
+              "id": 3,
+              "email": "admin@mail.com",
+              "password": "admin123",
+              "name": "Admin",
+              "role": "admin",
+              "avatar": "https://i.imgur.com/yhW6Yw1.jpg",
+              "creationAt": "2026-03-01T16:35:14.000Z",
+              "updatedAt": "2026-03-01T16:35:14.000Z"
+            },
+            {
+              "id": 5,
+              "email": "ronny@gmail.com",
+              "password": "123456",
+              "name": "Ronny",
+              "role": "customer",
+              "avatar": "https://api.escuelajs.co/api/v1/files/0d65.png",
+              "creationAt": "2026-03-01T17:47:21.000Z",
+              "updatedAt": "2026-03-01T17:47:21.000Z"
+            },
+            {
+              "id": 7,
+              "email": "maria@mail.com",
+              "password": "12345",
+              "name": "anora",
+              "role": "customer",
+              "avatar": "https://www.twinkl.de/teaching-wiki/ocean",
+              "creationAt": "2026-03-01T18:48:14.000Z",
+              "updatedAt": "2026-03-01T18:48:14.000Z"
+            },
+            {
+              "id": 8,
+              "email": "orzumurod@gail.com",
+              "password": "950011651",
+              "name": "Orzumurod Suyunboyev",
+              "role": "admin",
+              "avatar": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQaZnF8ElwCzCgHGTNVnaElToLnw3zE4AgEVQ&s",
+              "creationAt": "2026-03-01T19:46:57.000Z",
+              "updatedAt": "2026-03-01T19:46:57.000Z"
+            },
+            {
+              "id": 9,
+              "email": "lari@gmail.com",
+              "password": "12345",
+              "name": "Larissa",
+              "role": "customer",
+              "avatar": "https://picsum.photos/800",
+              "creationAt": "2026-03-01T19:47:35.000Z",
+              "updatedAt": "2026-03-01T19:47:35.000Z"
+            },
+            {
+              "id": 11,
+              "email": "zeyad@gmail.com",
+              "password": "Zeyad123",
+              "name": "zeayd",
+              "role": "customer",
+              "avatar": "https://i.pravatar.cc/150?img=3",
+              "creationAt": "2026-03-01T19:53:49.000Z",
+              "updatedAt": "2026-03-01T19:53:49.000Z"
+            }
+          ],
+          "hasError": false,
+          "isExecuting": false
+        },
+        "measured": {
+          "width": 240,
+          "height": 81
+        },
+        "selected": false,
+        "dragging": false
+      },
+      {
+        "id": "node_1772349622945",
+        "type": "mapperNode",
+        "position": {
+          "x": 786.4068490574767,
+          "y": 97.27231592759716
+        },
+        "data": {
+          "label": "New mapper",
+          "mappings": [
+            {
+              "id": 1772396164964,
+              "key": "email",
+              "value": "{{ node_1772349591642.data.0.email }}"
+            }
+          ],
+          "hasError": false,
+          "responsePreview": {
+            "email": "john@mail.com"
+          },
+          "isExecuting": false
+        },
+        "measured": {
+          "width": 200,
+          "height": 105
+        },
+        "selected": false,
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "source": "node_1772349585921",
+        "target": "node_1772349591642",
+        "animated": true,
+        "type": "smoothstep",
+        "id": "xy-edge__node_1772349585921-node_1772349591642"
+      },
+      {
+        "source": "node_1772349591642",
+        "target": "node_1772349622945",
+        "animated": true,
+        "type": "smoothstep",
+        "id": "xy-edge__node_1772349591642-node_1772349622945"
+      }
+    ],
+    "updatedAt": 1772396215308
+  },
+  {
+    "id": "default",
+    "name": "Demo Flow",
+    "nodes": [
+      {
+        "id": "1",
+        "type": "webhookNode",
+        "position": {
+          "x": 50,
+          "y": 150
+        },
+        "data": {
+          "url": "https://leflux.ai/api/v1/trigger"
+        }
+      },
+      {
+        "id": "2",
+        "type": "pixtralNode",
+        "position": {
+          "x": 350,
+          "y": 100
+        },
+        "data": {}
+      },
+      {
+        "id": "3",
+        "type": "mapperNode",
+        "position": {
+          "x": 680,
+          "y": 150
+        },
+        "data": {
+          "mappings": [
+            {
+              "key": "invoice_total",
+              "value": "{{ node.2.total }}"
             }
           ]
+        }
+      },
+      {
+        "id": "4",
+        "type": "httpNode",
+        "position": {
+          "x": 950,
+          "y": 200
         },
-        "hasError": false
+        "data": {
+          "method": "POST",
+          "url": "https://api.erp.com/invoices"
+        }
       },
-      "measured": {
-        "width": 240,
-        "height": 132
+      {
+        "id": "5",
+        "type": "responseNode",
+        "position": {
+          "x": 1250,
+          "y": 220
+        },
+        "data": {
+          "description": "200 OK - Invoice Created"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1-2",
+        "source": "1",
+        "target": "2",
+        "animated": true,
+        "type": "smoothstep"
       },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "node_1772413568652",
-      "type": "pixtralNode",
-      "position": {
-        "x": 475.4172632232679,
-        "y": -82.73184040005461
+      {
+        "id": "e2-3",
+        "source": "2",
+        "target": "3",
+        "animated": true,
+        "type": "smoothstep"
       },
-      "data": {
-        "label": "New pixtral",
-        "imageSource": "{{ node_1772399872256.data.files.imagen }}",
-        "responsePreview": "This image is a webpage for a real estate company named \"Martinez Inmobiliaria.\" Here's a detailed summary of the elements present in the image:\n\n1. **Header:**\n   - The header features the company's logo and name \"martinez Inmobiliaria.\"\n   - There is a navigation menu with the following options: Inicio (Home), Propiedades (Properties), Quiero comprar (I want to buy), Quiero vender (I want to sell), Quiero alquilar (I want to rent), Nosotros (About Us), Blog, and Contacto (Contact).\n\n2. **Hero Section:**\n   - A large, visually appealing image of a luxurious terrace overlooking the Mediterranean Sea.\n   - The headline reads: \"ENCUENTRA TU HOGAR A MINUTOS DEL MEDITERRÁNEO\" (Find your home minutes from the Mediterranean).\n   - A call-to-action button: \"Quiero encontrar mi casa\" (I want to find my house).\n\n3. **Testimonial Section:**\n   - A testimonial from Jorge Novo, stating: \"100% recomendable. Trato muy profesional y cercano. Muy implicados en el proyecto desde el principio. ¡Gracias!\" (100% recommendable. Very professional and close treatment. Very involved in the project from the beginning. Thanks!).\n   - The section also includes a tagline: \"Confía en nosotros como tu personal shopper inmobiliario para potenciar tu inversión\" (Trust us as your personal real estate shopper to enhance your investment).\n   - An image of a luxurious living room with a view of the Mediterranean.\n\n4. **Why Invest in Alicante Section:**\n   - The section is titled: \"¿POR QUÉ INVERTIR EN ALICANTE?\" (Why invest in Alicante?).\n   - It lists several benefits with placeholder text:\n     - Ut lorem ipsum deler sit amet, consectetur adipiscing elit, sed do eiusmod tempor.\n     - Eire eiby altir inapperemotast sinowecardatiam entis mognashior in alicante et evolobtum.\n     - Impseas solvaticlice neredia in easrkn oonos in amxvsstnsti undersadorum.\n   - An accompanying image of a modern building with a view of the sea.\n\n5. **Where to Invest Section:**\n   - The section is titled: \"¿DÓNDE PUEDO INVERTIR?\" (Where can I invest?).\n   - It provides a brief description with placeholder text:\n     - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n     - Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n     - Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n   - An image of a modern interior with a view of the Mediterranean.\n\n6. **Footer:**\n   - The footer includes the company logo and a brief mention of their services.\n   - It has sections for Navigation, Legal, and Contact information:\n     - Navigation: Inicio (Home), Propiedades (Properties), Quiero comprar (I want to buy), Quiero vender (I want to sell), Quiero alquilar (I want to rent), Nosotros (About Us).\n     - Legal: Acción (Action), Legal, Grupo oerocool, Shopper inmobiliario, Resocuados (Resources), Contacto (Contact).\n     - Contact information: Contacto es info, phone number, email, and social media icons for Facebook, Twitter, Instagram, and LinkedIn.\n   - Additional information: \"Integrado con un social inmobiliario\" (Integrated with a real estate social network).\n   - Logos indicating financing by the European Union and other certifications.\n\nThe overall design is clean, professional, and focused on showcasing luxurious properties and promoting investment in Alicante."
+      {
+        "id": "e3-4",
+        "source": "3",
+        "target": "4",
+        "animated": true,
+        "type": "smoothstep"
       },
-      "measured": {
-        "width": 240,
-        "height": 203
-      },
-      "selected": false,
-      "dragging": false
-    }
-  ],
-  "edges": [
-    {
-      "source": "node_1772399872256",
-      "target": "node_1772407608671",
-      "animated": true,
-      "type": "deletableEdge",
-      "id": "xy-edge__node_1772399872256-node_1772407608671"
-    },
-    {
-      "source": "node_1772407608671",
-      "target": "node_1772413568652",
-      "animated": true,
-      "type": "deletableEdge",
-      "id": "xy-edge__node_1772407608671-node_1772413568652"
-    },
-    {
-      "source": "node_1772413568652",
-      "target": "node_1772407311369",
-      "animated": true,
-      "type": "deletableEdge",
-      "id": "xy-edge__node_1772413568652-node_1772407311369"
-    }
-  ]
-}
+      {
+        "id": "e4-5",
+        "source": "4",
+        "target": "5",
+        "animated": true,
+        "type": "smoothstep"
+      }
+    ],
+    "updatedAt": 1772346081457
+  }
+]
