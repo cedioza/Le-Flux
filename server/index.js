@@ -221,65 +221,100 @@ if (fs.existsSync(distPath)) {
     });
 }
 
-// Telegram Webhook Route
-app.post('/api/telegram-webhook/:id', async (req, res) => {
-    const { id } = req.params;
-    const body = req.body || {};
+// Telegram Long Polling Engine
+let telegramOffset = 0;
+let isPollingTelegram = false;
 
-    // Telegram usually sends updates in `message` or `edited_message`
-    const msg = body.message || body.edited_message;
+async function pollTelegram() {
+    if (isPollingTelegram) return;
 
-    // Create a normalized payload
-    let payload = { raw: body };
-    if (msg) {
-        payload = {
-            ...payload,
-            chat_id: msg.chat?.id,
-            text: msg.text || '',
-            username: msg.from?.username || msg.from?.first_name || 'User',
-            date: msg.date
-        };
+    let token = process.env.TELEGRAM_BOT_TOKEN;
+    if (!token) {
+        try {
+            const settings = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+            token = settings.telegramToken;
+        } catch (e) { }
     }
 
-    console.log(`[Telegram] Update recibido para ID: ${id} del chat ${payload.chat_id || 'unknown'}`);
-
-    if (isTestModeActive && activeTestWebhookId === id) {
-        console.log(`[Telegram] Modo Test Activo. Emitiendo a Frontend...`);
-        io.emit('webhook_received', { webhookId: id, payload });
-        return res.status(200).json({ status: 'ok', mode: 'test', emit: true });
+    if (!token) {
+        setTimeout(pollTelegram, 5000);
+        return;
     }
+
+    isPollingTelegram = true;
+    try {
+        const fetch = (await import('node-fetch')).default;
+
+        const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${telegramOffset + 1}&timeout=30`);
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.ok && data.result && data.result.length > 0) {
+                for (const update of data.result) {
+                    telegramOffset = update.update_id;
+                    processTelegramUpdate(update);
+                }
+            }
+        } else if (res.status === 409) {
+            console.log('[Telegram Poller] Conflicto de Webhook detectado. Eliminando Webhook anterior para permitir Long Polling...');
+            await fetch(`https://api.telegram.org/bot${token}/deleteWebhook`);
+        }
+    } catch (err) {
+        // Ignorar errores de red temporales
+    }
+
+    isPollingTelegram = false;
+    setTimeout(pollTelegram, 1000);
+}
+
+function processTelegramUpdate(update) {
+    const msg = update.message || update.edited_message;
+    if (!msg) return;
+
+    let payload = {
+        raw: update,
+        chat_id: msg.chat?.id,
+        text: msg.text || '',
+        username: msg.from?.username || msg.from?.first_name || 'User',
+        date: msg.date
+    };
+
+    console.log(`[Telegram] Mensaje entrante de @${payload.username}: ${payload.text}`);
 
     try {
         const fileContent = fs.readFileSync(FLOW_FILE, 'utf8');
         const flows = JSON.parse(fileContent);
 
-        let targetFlow = null;
+        let targetFlows = [];
         for (const flow of flows) {
-            const hasHook = flow.nodes?.find(n => n.type === 'telegramTriggerNode' && n.id === id);
+            const hasHook = flow.nodes?.find(n => n.type === 'telegramTriggerNode');
             if (hasHook) {
-                targetFlow = flow;
-                break;
+                targetFlows.push({ flow, triggerId: hasHook.id });
             }
         }
 
-        if (!targetFlow) {
-            console.warn(`[Telegram] No se encontro flujo activo para Trigger ID: ${id}`);
-            return res.status(404).json({ error: 'Webhook Endpoint Not Found or Inactive.' });
+        if (targetFlows.length === 0) {
+            return;
         }
 
-        console.log(`[Telegram] Iniciando Background Engine para Flujo: ${targetFlow.name}`);
-
-        executeHeadlessFlow(id, payload, targetFlow.nodes, targetFlow.edges)
-            .then(result => console.log(`[Telegram] Ejecucion Background Finalizada OK.`))
-            .catch(err => console.error(`[Telegram] Fallo en Ejecucion Background:`, err));
-
-        return res.status(200).send('OK');
+        for (const { flow, triggerId } of targetFlows) {
+            if (isTestModeActive && activeTestWebhookId === triggerId) {
+                console.log(`[Telegram] Modo Test Activo. Emitiendo a Frontend en Flujo: ${flow.name}...`);
+                io.emit('webhook_received', { webhookId: triggerId, payload });
+            } else {
+                console.log(`[Telegram] Ejecutando Flujo Background: ${flow.name}`);
+                executeHeadlessFlow(triggerId, payload, flow.nodes, flow.edges)
+                    .then(result => console.log(`[Telegram] Flujo [${flow.name}] finalizado OK.`))
+                    .catch(err => console.error(`[Telegram] Error en flujo [${flow.name}]:`, err));
+            }
+        }
 
     } catch (err) {
-        console.error('[Telegram] Error leyendo flujos localmente:', err);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('[Telegram] Error procesando flujos locales:', err);
     }
-});
+}
+
+setTimeout(pollTelegram, 2000);
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {

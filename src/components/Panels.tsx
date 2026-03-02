@@ -506,57 +506,21 @@ export const SettingsPanel = ({ selectedNode, onClose, onDelete, onUpdateData, o
                                     </>
                                 ) : (
                                     <div className="text-center text-xs">
-                                        Modo Testing desactivado. Envía algo por Telegram y aparecerá aquí.<br />
-                                        <span className="text-[#0088cc] font-bold mt-2 block">Copia esta URL y fíjala con setWebhook en la API de Telegram.</span>
+                                        El backend interno de Le Flux está escuchando permanentemente por nuevos mensajes de Telegram automáticamente (Long Polling).<br />
+                                        <span className="text-[#0088cc] font-bold mt-2 block">No es necesario configurar Webhooks en la API externa.</span>
                                     </div>
                                 )}
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-mistral-muted mb-2 uppercase tracking-wide">Telegram Webhook URL</label>
-                                <div className="flex gap-2 mb-4">
-                                    <input
-                                        type="text"
-                                        readOnly
-                                        className="flex-1 bg-mistral-bg border border-mistral-border rounded px-3 py-2 text-[10px] text-gray-400 font-mono"
-                                        value={`${window.location.origin}/api/telegram-webhook/${selectedNode.id}`}
-                                    />
-                                    <button
-                                        onClick={() => navigator.clipboard.writeText(`${window.location.origin}/api/telegram-webhook/${selectedNode.id}`)}
-                                        className="bg-mistral-panel hover:bg-[#2d3748] text-white px-3 text-xs rounded border border-mistral-border transition-colors truncate"
-                                    >Copiar</button>
+                                <div className="text-[10px] text-gray-400 mb-4 bg-white/5 p-3 rounded border border-mistral-border text-center">
+                                    Este nodo extraerá de forma pasiva el <code>chat.id</code>, el <code>text</code> y el <code>username</code> en tiempo real.
                                 </div>
-                                <div className="text-[10px] text-gray-500 mb-4 bg-white/5 p-2 rounded">
-                                    Esta ruta extraerá automáticamente el <code>chat.id</code>, el <code>text</code> y el <code>username</code> del usuario.
-                                </div>
-                                <button
-                                    onClick={async () => {
-                                        if (!credentials?.telegramToken) {
-                                            alert("Primero configura tu Telegram Bot Token en el panel de Credenciales (arriba a la derecha).");
-                                            return;
-                                        }
-                                        const url = `${window.location.origin}/api/telegram-webhook/${selectedNode.id}`;
-                                        try {
-                                            const res = await fetch(`https://api.telegram.org/bot${credentials.telegramToken}/setWebhook?url=${encodeURIComponent(url)}`);
-                                            const data = await res.json();
-                                            if (data.ok) {
-                                                alert("Webhook registrado exitosamente en Telegram!\nTodo el chat llegará a este nodo automáticamente.");
-                                            } else {
-                                                alert(`Error de Telegram: ${data.description}`);
-                                            }
-                                        } catch (e: any) {
-                                            alert("Error de red: " + e.message);
-                                        }
-                                    }}
-                                    className="w-full font-bold uppercase tracking-widest text-[10px] py-2 mb-2 rounded transition-colors bg-[#0088cc] hover:bg-[#0077b3] text-white border border-[#005f99] shadow-lg"
-                                >
-                                    Vincular Bot Automáticamente
-                                </button>
                                 <button
                                     onClick={handleTestWebhook}
                                     disabled={isListening}
                                     className={`w-full font-bold uppercase tracking-widest text-[10px] py-3 rounded transition-colors ${isListening ? 'bg-mistral-bg text-gray-500 cursor-not-allowed border border-gray-800' : 'bg-[#0088cc]/20 text-[#0088cc] hover:bg-[#0088cc]/30 border border-[#0088cc]/50'}`}
                                 >
-                                    {isListening ? 'Detener Test' : '▶ Activar Escucha (2 Mins)'}
+                                    {isListening ? 'Detener Test' : '▶ Probar Recepción Local (2 Mins)'}
                                 </button>
                             </div>
                         </>
