@@ -8,65 +8,16 @@
 
 ## 🏆 Built for the Mistral Worldwide Hackathon 2026 (Online Edition)
 
-This project was built during the 2026 Mistral Worldwide Hackathon to provide the Mistral ecosystem with a first-class, open-source workflow orchestration tool.
+This project was built during the **2026 Mistral Worldwide Hackathon** to provide the Mistral ecosystem with a first-class, open-source workflow orchestration tool.
 
-<div class="grid grid-cols-3 gap-4" style="background: #111; padding: 20px; border-radius: 8px;">
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="AWS" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1771606214940-hf0j2b.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Hugging Face" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100295334-ymyqr.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Nvidia" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1770997823560-tyra4o.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Giant" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100764799-ftqki.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Weights & Biases" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1771885919278-uo2nqe.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Mistral" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772112453966-ugh0w4.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Raise" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100794950-cvdze.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Elevenlabs" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100434588-gfqx2s.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Tilde Research" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100815399-udt1e.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="White Circle" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100852452-72y82.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-  <div class="flex items-center justify-center p-4">
-    <div class="relative w-full" style="height: 36px;">
-        <img alt="Jump" loading="lazy" src="https://zjemqisolzojtlvrfjiu.supabase.co/storage/v1/object/public/sponsor-logos/1772100911730-gjyphe.png" style="height: 100%; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
-    </div>
-  </div>
-</div>
+🔗 **Hackathon Links:**
+- [Mistral Worldwide Hackathon – Official Site](https://worldwide-hackathon.mistral.ai/)
+- [Hackathon on Luma (Online Edition)](https://luma.com/mistralhack-online?tk=cGkSSb)
+- [Hackathon on Iterate](https://hackiterate.com/mistral-worldwide-hackathons)
+
+**Sponsors & Partners:**
+
+> **AWS** · **Hugging Face** · **NVIDIA** · **Weights & Biases** · **Mistral** · **ElevenLabs** · **Giant** · **Raise** · **Tilde Research** · **White Circle** · **Jump Trading**
 
 ---
 
@@ -82,6 +33,51 @@ Top AI companies offer powerful ecosystem tools, but developers building with Mi
 ## 🏗️ Architecture & Core Features
 
 Le Flux isn't just a frontend—it is powered by a custom-built backend execution engine explicitly designed for event-driven agent workflows.
+
+```mermaid
+graph TB
+    subgraph Browser["🖥️ Browser - React Frontend"]
+        UI["React Flow Canvas"]
+        Panels["Config Panels & Data Mapper"]
+        Logs["Live Execution Logs"]
+    end
+
+    subgraph Backend["⚙️ Node.js Backend Engine - Port 3000"]
+        Express["Express Server"]
+        Executor["Flow Executor - DAG Traversal"]
+        Poller["Telegram Long-Poller"]
+        WebhookRouter["Webhook Router"]
+    end
+
+    subgraph External["🌐 External APIs"]
+        Mistral["Mistral API - mistral-large-latest"]
+        Pixtral["Pixtral Vision API"]
+        TelegramAPI["Telegram Bot API"]
+        CustomAPI["Custom Webhooks & REST APIs"]
+    end
+
+    subgraph Storage["💾 Persistent Storage"]
+        Flows["flows.json - Multi-Flow Store"]
+        Executions["executions.json - Execution Logs"]
+        Settings["settings.json - Credentials"]
+    end
+
+    UI <-->|"Socket.io - Real-time"| Express
+    Panels --> UI
+    Logs --> UI
+    Express --> Executor
+    Express --> WebhookRouter
+    Poller -->|"getUpdates polling"| TelegramAPI
+    Poller --> Executor
+    WebhookRouter --> Executor
+    Executor -->|"Chat Completion"| Mistral
+    Executor -->|"Image Analysis"| Pixtral
+    Executor -->|"Send Message"| TelegramAPI
+    Executor -->|"HTTP Requests"| CustomAPI
+    Executor --> Executions
+    Express --> Flows
+    Express --> Settings
+```
 
 ### 1. Multi-Flow Headless Engine
 - **Independent Execution Contexts:** The backend Express/Node.js server runs multiple flows simultaneously. Each flow execution creates a sandboxed context and logs its run with a unique `flowId`.
@@ -101,11 +97,33 @@ Le Flux isn't just a frontend—it is powered by a custom-built backend executio
 
 ---
 
-## 🔮 Future Roadmap: Expanding the Ecosystem
+## 🔮 Future Roadmap: Building Together
 
-The modular architecture of Le Flux was built with expansion in mind. In future phases, we aim to integrate more tools from the ecosystem, aligning with hackathon sponsor capabilities:
-- **Weights & Biases Integration:** The isolated execution logs from our Headless Engine are perfectly structured to be modularized and piped into W&B Prompts and Traces for MLOps observability. 
-- **Voice Agent Nodes with ElevenLabs:** Adding specialized Text-to-Speech (TTS) nodes into the visual canvas, allowing Mistral models to trigger real-time voice generation and respond to conversational inputs.
+Le Flux was designed from day one with a **modular, extensible architecture**. Every node type is a self-contained unit, making it straightforward for the community to contribute new integrations. Here's where we're headed:
+
+### Phase 1 — Core Stability *(Current)*
+- [x] Multi-flow management with independent execution contexts
+- [x] Native Webhook & Telegram triggers with background polling
+- [x] Mistral LLM & Pixtral vision nodes
+- [x] Real-time websocket execution logs & data mapping engine
+
+### Phase 2 — Richer Node Ecosystem
+- [ ] **Voice & Audio Nodes** — Text-to-Speech and Speech-to-Text integration (ElevenLabs, Whisper) to build conversational voice agents directly on the canvas
+- [ ] **Database Connector Nodes** — Read/write from PostgreSQL, Supabase, MongoDB, or Firebase to persist and query data mid-flow
+- [ ] **Conditional Logic & Branching** — If/Else nodes, Switch nodes, and loop constructs to enable complex decision trees without code
+
+### Phase 3 — Observability & DevOps
+- [ ] **Execution Analytics Dashboard** — Aggregated metrics per flow: average latency, token consumption trends, error rates
+- [ ] **MLOps Logging** — Structured trace export compatible with Weights & Biases, LangSmith, or custom observability pipelines
+- [ ] **Version Control for Flows** — Git-like versioning of flow configurations to track changes, rollback, and collaborate
+
+### Phase 4 — Community & Deployment
+- [ ] **Node Marketplace** — A community-driven registry where developers can publish, share, and install custom nodes as plugins
+- [ ] **One-Click Cloud Deploy** — Deploy flows as serverless endpoints (AWS Lambda, Cloudflare Workers, or Dokploy) directly from the UI
+- [ ] **Multi-User Collaboration** — Real-time collaborative editing of flows with role-based access control
+- [ ] **Mistral Fine-Tuning Integration** — Trigger fine-tuning jobs from within a flow using collected conversation data
+
+> 🤝 **This is an open-source project.** We believe the best tools are built by the community, for the community. Contributions, ideas, and feedback are always welcome—whether it's a new node type, a UI improvement, or a bug fix. Let's build this together.
 
 ---
 
